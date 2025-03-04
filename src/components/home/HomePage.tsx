@@ -54,14 +54,18 @@ const HomePage = () => {
     },
   ];
   return (
-    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "40px 24px" }}>
+    <div style={{
+      maxWidth: 1400,
+      margin: "0 auto",
+      padding: "clamp(16px, 3vw, 40px) clamp(12px, 2vw, 24px)"
+    }}>
       {/* Hero Section */}
       <div style={{ textAlign: "center", marginBottom: 60 }}>
-        <Title style={{ fontSize: "2.5rem", marginBottom: 24 }}>
+        <Title style={{ fontSize: "clamp(1.5rem, 5vw, 2.5rem)", marginBottom: 24 }}>
           South Wharf Drive Community Printing System
         </Title>
         <Paragraph
-          style={{ fontSize: "1.2rem", maxWidth: 800, margin: "0 auto 32px" }}
+          style={{ fontSize: "clamp(1rem, 3vw, 1.2rem)", maxWidth: 800, margin: "0 auto 32px" }}
         >
           Upload documents, select print options, pay online, and pick up from
           your mailbox
