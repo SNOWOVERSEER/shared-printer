@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "antd/dist/reset.css";
 import StyledComponentsRegistry from "@/lib/AntdRegistry"; // 导入我们的Ant Design注册表组件
@@ -7,7 +6,7 @@ import StyledComponentsRegistry from "@/lib/AntdRegistry"; // 导入我们的Ant
 // 定义页面元数据，如标题和描述
 export const metadata: Metadata = {
   title: "PrintHub - Community Printing Service",
-  description: "Easy document printing service for your community",
+  description: "Easy document printing service for our community",
 };
 
 export default function RootLayout({

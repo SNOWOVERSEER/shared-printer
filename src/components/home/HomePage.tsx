@@ -1,6 +1,14 @@
-"use client";
-
-import { Typography, Row, Col, Button, Card, Space, Divider, theme } from "antd";
+import {
+  Typography,
+  Row,
+  Col,
+  Button,
+  Card,
+  Space,
+  Divider,
+  theme,
+  Badge,
+} from "antd";
 import {
   FileTextOutlined,
   PrinterOutlined,
@@ -8,11 +16,18 @@ import {
   InboxOutlined,
   EnvironmentOutlined,
   CheckCircleOutlined,
+  RightCircleFilled,
+  ThunderboltFilled,
+  StarFilled,
 } from "@ant-design/icons";
 import Link from "next/link";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import { useEffect, useState } from "react";
 import React from "react";
+import { PriceCard } from "./PriceCard";
+
+const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || "";
+
 const { Title, Paragraph, Text } = Typography;
 const { useToken } = theme;
 
@@ -29,6 +44,40 @@ const locations = [
   {
     name: "103 South Wharf Dr",
     position: { lat: -37.8219201, lng: 144.9347633 },
+  },
+];
+
+const pricing = [
+  {
+    title: "Black & White",
+    subtitle: "Most economical",
+    price: "0.2",
+    type: "Standard A4",
+    features: ["Single/Double-sided printing", "80g paper", "Fast processing"],
+    isPopular: true,
+    isDisabled: false,
+  },
+  {
+    title: "Color Printing",
+    subtitle: "Perfect for presentations",
+    price: "0.7",
+    type: "Standard A4",
+    features: ["Single/Double-sided printing", "80g paper", "Vibrant colors"],
+    isPopular: false,
+    isDisabled: false,
+  },
+  {
+    title: "A3 & Photo",
+    subtitle: "Coming soon",
+    price: "1.0",
+    type: "Premium Paper",
+    features: [
+      "Single/Double-sided printing",
+      "Premium A3 & photo paper",
+      "Professional quality",
+    ],
+    isPopular: false,
+    isDisabled: true,
   },
 ];
 
@@ -64,47 +113,13 @@ const HomePage = () => {
   ];
 
   return (
-    <div style={{
-      maxWidth: 1400,
-      margin: "0 auto",
-      padding: "clamp(16px, 3vw, 40px) clamp(12px, 2vw, 24px)",
-    }}>
-      <style jsx global>{`
-        .fade-in {
-          animation: fadeIn 0.8s ease-out;
-        }
-        
-        .slide-up {
-          animation: slideUp 0.6s ease-out;
-        }
-        
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .feature-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-          transition: all 0.3s ease;
-        }
-        
-        .price-card {
-          transition: all 0.3s ease;
-        }
-        
-        .price-card:hover {
-          transform: translateY(-10px);
-          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4) !important;
-          border-color: ${token.colorPrimary} !important;
-        }
-      `}</style>
-
+    <div
+      style={{
+        maxWidth: 1400,
+        margin: "0 auto",
+        padding: "clamp(16px, 3vw, 40px) clamp(12px, 2vw, 24px)",
+      }}
+    >
       {/* Hero Section */}
       <Card
         className="fade-in"
@@ -112,46 +127,82 @@ const HomePage = () => {
           marginBottom: 60,
           borderRadius: 16,
           overflow: "hidden",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)"
+          background: `linear-gradient(135deg, ${token.colorPrimaryBg} 0%, #ffffff 100%)`,
+          border: "none",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+        }}
+        styles={{
+          body: {
+            padding: 0,
+          },
         }}
       >
-        <div style={{ textAlign: "center", padding: "40px 20px" }}>
+        <div
+          style={{
+            textAlign: "center",
+            padding: "60px 20px",
+            maxWidth: 900,
+            margin: "0 auto",
+          }}
+        >
           <Title
             style={{
-              fontSize: "clamp(1.5rem, 5vw, 2.5rem)",
-              marginBottom: 24
+              fontSize: "clamp(1.5rem, 5vw, 2.8rem)",
+              marginBottom: 24,
+              lineHeight: 1.2,
             }}
           >
-            South Wharf Drive Community Printing System
+            Print Your Documents
+            <br />
+            <span style={{ color: token.colorPrimary }}>Quick & Easy</span>
           </Title>
           <Paragraph
             style={{
-              fontSize: "clamp(1rem, 3vw, 1.2rem)",
-              maxWidth: 800,
+              fontSize: "clamp(1rem, 2vw, 1.2rem)",
+              maxWidth: 600,
               margin: "0 auto 32px",
+              color: token.colorTextSecondary,
             }}
           >
-            Upload documents, select print options, pay online, and pick up from
-            your mailbox
+            Upload • Print • Collect
+            <br />
+            Available at 81 & 103 South Wharf Drive
           </Paragraph>
-          <Space size="middle">
-            <Link href="">
-              <Button type="primary" size="large">
-                Start Printing
+          <Space size="middle" wrap style={{ justifyContent: "center" }}>
+            <Link href="/print">
+              <Button type="primary" size="large" icon={<ThunderboltFilled />}>
+                Start Printing Now
               </Button>
             </Link>
-            <Link href="">
-              <Button size="large">Check Orders</Button>
+            <Link href="/samples">
+              <Button size="large">See Pricing</Button>
             </Link>
           </Space>
         </div>
       </Card>
 
       {/* Features Section */}
-      <div style={{ marginBottom: 60 }}>
-        <Title level={2} style={{ textAlign: "center", marginBottom: 40 }}>
-          How It Works
+      <div style={{ marginBottom: 80 }}>
+        <Title
+          level={2}
+          style={{
+            textAlign: "center",
+            marginBottom: 16,
+            fontSize: "clamp(1.5rem, 4vw, 2.2rem)",
+          }}
+        >
+          Four Simple Steps
         </Title>
+        <Paragraph
+          style={{
+            textAlign: "center",
+            marginBottom: 40,
+            fontSize: "1.1rem",
+            color: token.colorTextSecondary,
+          }}
+        >
+          Get your documents printed in minutes
+        </Paragraph>
         <Row gutter={[24, 24]}>
           {features.map((feature, index) => (
             <Col key={index} xs={24} sm={12} lg={6}>
@@ -159,33 +210,56 @@ const HomePage = () => {
                 className="feature-card slide-up"
                 style={{
                   height: "100%",
-                  borderRadius: 12,
-                  transition: "all 0.3s ease"
+                  borderRadius: 16,
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
                 }}
-                bodyStyle={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  textAlign: "center",
-                  padding: 24
+                styles={{
+                  body: {
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    textAlign: "center",
+                    padding: 32,
+                  },
                 }}
               >
-                <div style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  width: 80,
-                  height: 80,
-                  borderRadius: 16,
-                  backgroundColor: token.colorPrimaryBg,
-                  marginBottom: 16
-                }}>
-                  {React.cloneElement(feature.icon, { style: { fontSize: "32px", color: token.colorPrimary } })}
+                <div
+                  style={{
+                    position: "relative",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: 80,
+                    height: 80,
+                    borderRadius: 20,
+                    backgroundColor: token.colorPrimaryBg,
+                    marginBottom: 20,
+                  }}
+                >
+                  {React.cloneElement(feature.icon, {
+                    style: { fontSize: "32px", color: token.colorPrimary },
+                  })}
+                  {index < features.length - 1 && (
+                    <RightCircleFilled
+                      style={{
+                        position: "absolute",
+                        right: -32,
+                        color: token.colorPrimary,
+                        fontSize: 16,
+                      }}
+                    />
+                  )}
                 </div>
                 <Title level={4} style={{ marginTop: 0, marginBottom: 12 }}>
                   {feature.title}
                 </Title>
-                <Paragraph style={{ marginBottom: 0 }}>
+                <Paragraph
+                  style={{
+                    marginBottom: 0,
+                    color: token.colorTextSecondary,
+                  }}
+                >
                   {feature.description}
                 </Paragraph>
               </Card>
@@ -195,197 +269,92 @@ const HomePage = () => {
       </div>
 
       {/* Pricing Section */}
-      <div style={{ marginBottom: 60 }}>
-        <Title level={2} style={{ textAlign: "center", marginBottom: 40 }}>
-          Pricing
+      <div
+        style={{
+          marginBottom: 80,
+          padding: "60px 0",
+          background: token.colorBgLayout,
+          borderRadius: 24,
+        }}
+      >
+        <Title
+          level={2}
+          style={{
+            textAlign: "center",
+            marginBottom: 16,
+            fontSize: "clamp(1.5rem, 4vw, 2.2rem)",
+          }}
+        >
+          Simple Pricing
         </Title>
-        <Row gutter={[24, 24]}>
-          <Col xs={24} md={12} lg={8}>
-            <Card
-              className="price-card"
-              hoverable
-              title={<Title level={3}
-                style={{
-                  margin: 0
-                }}
-              >Black & White</Title>}
-              style={{
-                height: "100%",
-                borderRadius: 12,
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
-                transition: "all 0.3s ease",
-              }}
-              styles={{ body: { padding: 24 }, header: { textAlign: "center" } }}
-
-            >
-              <div style={{ textAlign: "center", marginBottom: 24 }}>
-                <Text type="secondary">Standard A4</Text>
-                <Title style={{ margin: "16px 0" }}>
-                  <Text style={{ fontSize: "0.5em", verticalAlign: "top" }}>AUD </Text>
-                  0.2
-                  <Text type="secondary" style={{ fontSize: "0.4em" }}>/page</Text>
-                </Title>
-              </div>
-
-              <ul style={{ listStyle: "none", padding: 0, marginBottom: 24 }}>
-                {["Single/Double-sided printing", "80g paper", "Fast processing"].map((item, i) => (
-                  <li key={i} style={{
-                    padding: "8px 0",
-                    display: "flex",
-                    alignItems: "center"
-                  }}>
-                    <CheckCircleOutlined style={{ color: token.colorPrimary, marginRight: 8 }} />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-
-              <Link href="">
-                <Button type="primary" block size="large" style={{ borderRadius: 8 }}>
-                  Select
-                </Button>
-              </Link>
-            </Card>
-          </Col>
-
-          <Col xs={24} md={12} lg={8}>
-            <Card
-              className="price-card"
-              hoverable
-              title={<Title level={3}
-                style={{
-                  margin: 0
-                }}
-              >Color</Title>}
-              style={{
-                height: "100%",
-                borderRadius: 12,
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
-                // borderColor: token.colorPrimary,
-                transition: "all 0.3s ease",
-              }}
-              styles={{
-                header: {
-                  textAlign: "center",
-                  // backgroundColor: token.colorPrimaryBg
-                },
-                body: {
-                  padding: 24
-                }
-              }}
-
-            >
-              <div style={{ textAlign: "center", marginBottom: 24 }}>
-                <Text type="secondary">Standard A4</Text>
-                <Title style={{ margin: "16px 0" }}>
-                  <Text style={{ fontSize: "0.5em", verticalAlign: "top" }}>AUD </Text>
-                  0.7
-                  <Text type="secondary" style={{ fontSize: "0.4em" }}>/page</Text>
-                </Title>
-              </div>
-
-              <ul style={{ listStyle: "none", padding: 0, marginBottom: 24 }}>
-                {["Single/Double-sided printing", "80g paper", "Vibrant colors"].map((item, i) => (
-                  <li key={i} style={{
-                    padding: "8px 0",
-                    display: "flex",
-                    alignItems: "center"
-                  }}>
-                    <CheckCircleOutlined style={{ color: token.colorPrimary, marginRight: 8 }} />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-
-              <Link href="">
-                <Button type="primary" block size="large" style={{ borderRadius: 8 }}>
-                  Select
-                </Button>
-              </Link>
-            </Card>
-          </Col>
-
-          <Col xs={24} md={12} lg={8}>
-            <Card
-              className="price-card"
-              hoverable
-              title={<Title level={3}
-                style={{
-                  margin: 0
-                }}
-              >A3 & Photo</Title>}
-              style={{
-                height: "100%",
-                borderRadius: 12,
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
-                transition: "all 0.3s ease"
-              }}
-              styles={{
-                header: {
-                  textAlign: "center",
-                },
-                body: {
-                  padding: 24
-                }
-              }}
-            >
-              <div style={{ textAlign: "center", marginBottom: 24 }}>
-                <Text type="secondary">Premium Paper</Text>
-                <Title style={{ margin: "16px 0" }}>
-                  <Text style={{ fontSize: "0.5em", verticalAlign: "top" }}>AUD </Text>
-                  1.0
-                  <Text type="secondary" style={{ fontSize: "0.4em" }}>/page</Text>
-                </Title>
-              </div>
-
-              <ul style={{ listStyle: "none", padding: 0, marginBottom: 24 }}>
-                {["Single/Double-sided printing", "Premium A3 & photo paper", "Fast processing"].map((item, i) => (
-                  <li key={i} style={{
-                    padding: "8px 0",
-                    display: "flex",
-                    alignItems: "center"
-                  }}>
-                    <CheckCircleOutlined style={{ color: token.colorPrimary, marginRight: 8 }} />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-
-              <Button block size="large" disabled style={{ borderRadius: 8 }}>
-                Currently Unavailable
-              </Button>
-            </Card>
-          </Col>
+        <Paragraph
+          style={{
+            textAlign: "center",
+            marginBottom: 40,
+            fontSize: "1.1rem",
+            color: token.colorTextSecondary,
+          }}
+        >
+          No hidden fees, pay only for what you print
+        </Paragraph>
+        <Row gutter={[24, 24]} style={{ maxWidth: 1200, margin: "0 auto" }}>
+          {pricing.map((plan, index) => (
+            <Col key={index} xs={24} md={12} lg={8}>
+              {plan.isPopular ? (
+                <Badge.Ribbon text="MOST POPULAR" color={token.colorPrimary}>
+                  <PriceCard plan={plan} token={token} />
+                </Badge.Ribbon>
+              ) : (
+                <PriceCard plan={plan} token={token} />
+              )}
+            </Col>
+          ))}
         </Row>
       </div>
 
       {/* Service Area Section */}
-      <Divider style={{ margin: "60px 0 40px" }} />
-
-      <div style={{ marginBottom: 60 }}>
-        <Title level={2} style={{ textAlign: "center", marginBottom: 40 }}>
-          Service Area
+      <div style={{ marginBottom: 80 }}>
+        <Title
+          level={2}
+          style={{
+            textAlign: "center",
+            marginBottom: 16,
+            fontSize: "clamp(1.5rem, 4vw, 2.2rem)",
+          }}
+        >
+          Available Locations
         </Title>
+        <Paragraph
+          style={{
+            textAlign: "center",
+            marginBottom: 40,
+            fontSize: "1.1rem",
+            color: token.colorTextSecondary,
+          }}
+        >
+          Find the nearest printing point
+        </Paragraph>
 
-        <Row gutter={[32, 32]} align="middle">
-          <Col xs={24} lg={12} style={{ height: 450 }}>
+        <Row gutter={[32, 32]} align="stretch">
+          <Col xs={24} lg={12}>
             <Card
               className="fade-in"
               style={{
                 height: "100%",
-                borderRadius: 12,
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)"
+                borderRadius: 16,
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
               }}
               styles={{
                 body: {
                   height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  padding: 24
-                }
+                  padding: 32,
+                },
               }}
             >
-              <Title level={4} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Title
+                level={4}
+                style={{ display: "flex", alignItems: "center", gap: 8 }}
+              >
                 <EnvironmentOutlined style={{ color: token.colorPrimary }} />
                 Available Locations
               </Title>
@@ -402,11 +371,13 @@ const HomePage = () => {
                     style={{
                       marginBottom: 12,
                       borderRadius: 8,
-                      borderLeft: `3px solid ${token.colorPrimary}`
+                      borderLeft: `3px solid ${token.colorPrimary}`,
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center" }}>
-                      <EnvironmentOutlined style={{ color: token.colorPrimary, marginRight: 8 }} />
+                      <EnvironmentOutlined
+                        style={{ color: token.colorPrimary, marginRight: 8 }}
+                      />
                       {location.name}
                     </div>
                   </Card>
@@ -419,36 +390,37 @@ const HomePage = () => {
                   marginTop: 16,
                   borderRadius: 8,
                   backgroundColor: token.colorPrimaryBg,
-                  borderColor: token.colorPrimaryBorder
+                  borderColor: token.colorPrimaryBorder,
                 }}
               >
                 <Paragraph style={{ margin: 0 }}>
-                  More locations coming soon! Stay tuned for updates as we expand our service area.
+                  More locations coming soon! Stay tuned for updates as we
+                  expand our service area.
                 </Paragraph>
               </Card>
             </Card>
           </Col>
 
-          <Col xs={24} lg={12} style={{ height: 450 }}>
+          <Col xs={24} lg={12}>
             <Card
               className="fade-in"
               style={{
                 height: "100%",
-                borderRadius: 12,
+                borderRadius: 16,
                 overflow: "hidden",
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)"
               }}
               styles={{
                 body: {
-                  padding: 0
-                }
+                  padding: 0,
+                  height: "450px",
+                },
               }}
             >
-              <LoadScript googleMapsApiKey="AIzaSyCROtWKD0SaNpayGKl8OOD1PAEhI4PLmcQ">
+              <LoadScript googleMapsApiKey={googleApiKey}>
                 <GoogleMap
                   mapContainerStyle={{
                     width: "100%",
-                    height: "450px",
+                    height: "100%",
                   }}
                   center={center}
                   zoom={15}
@@ -472,27 +444,44 @@ const HomePage = () => {
         className="slide-up"
         style={{
           marginBottom: 60,
-          borderRadius: 12,
-          backgroundColor: token.colorPrimaryBg,
-          borderColor: token.colorPrimaryBorder,
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)"
+          borderRadius: 16,
+          background: token.colorPrimary,
+          border: "none",
+        }}
+        styles={{
+          body: {
+            padding: 32,
+          },
         }}
       >
-        <Row align="middle" justify="space-between" gutter={[24, 24]}>
+        <Row
+          align="middle"
+          justify="space-between"
+          gutter={[24, 24]}
+          style={{ color: "#fff" }}
+        >
           <Col xs={24} md={16}>
-            <Title level={3} style={{ marginBottom: 8 }}>
+            <Title level={3} style={{ color: "#fff", marginBottom: 8 }}>
               Ready to start printing?
             </Title>
-            <Paragraph style={{ marginBottom: 0 }}>
-              Join our community printing system today and enjoy convenient, affordable printing services.
+            <Paragraph
+              style={{ color: "rgba(255,255,255,0.85)", marginBottom: 0 }}
+            >
+              Join our community printing system today and enjoy convenient,
+              affordable printing services.
             </Paragraph>
           </Col>
           <Col xs={24} md={8} style={{ textAlign: "right" }}>
-            <Link href="">
-              <Button type="primary" size="large">
-                Get Started
-              </Button>
-            </Link>
+            <Button
+              size="large"
+              style={{
+                background: "#fff",
+                borderColor: "#fff",
+                color: token.colorPrimary,
+              }}
+            >
+              Get Started Now
+            </Button>
           </Col>
         </Row>
       </Card>

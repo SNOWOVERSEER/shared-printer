@@ -75,7 +75,7 @@ const Navbar = () => {
         items={navItems.map((item) => ({
           ...item,
           key: item.key,
-          label: <Link href="/">{item.label}</Link>, // TODO: Add link to each item
+          label: <Link href={item.key}>{item.label}</Link>,
         }))}
       />
       {/* 右侧按钮部分 */}
@@ -89,7 +89,7 @@ const Navbar = () => {
             Login
           </Button>
         </Link>
-        <Link href="/">  {/* TODO: Add link to create order */}
+        <Link href="/print">
           <Button
             type="primary"
             icon={<PrinterOutlined />}
