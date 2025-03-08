@@ -22,7 +22,7 @@ import {
 } from "@ant-design/icons";
 import Link from "next/link";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import React from "react";
 import { PriceCard } from "./PriceCard";
 
@@ -84,6 +84,10 @@ const pricing = [
 const HomePage = () => {
   const { token } = useToken();
   const [isLoaded, setIsLoaded] = useState(false);
+  const pricingRef = useRef<HTMLDivElement>(null);
+  const handleClickPricing = () => {
+    pricingRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     setIsLoaded(true);
@@ -174,9 +178,9 @@ const HomePage = () => {
                 Start Printing Now
               </Button>
             </Link>
-            <Link href="/samples">
-              <Button size="large">See Pricing</Button>
-            </Link>
+
+            <Button size="large" onClick={handleClickPricing}>See Pricing</Button>
+
           </Space>
         </div>
       </Card>
@@ -270,6 +274,7 @@ const HomePage = () => {
 
       {/* Pricing Section */}
       <div
+        ref={pricingRef}
         style={{
           marginBottom: 80,
           padding: "60px 0",
@@ -467,21 +472,23 @@ const HomePage = () => {
             <Paragraph
               style={{ color: "rgba(255,255,255,0.85)", marginBottom: 0 }}
             >
-              Join our community printing system today and enjoy convenient,
+              Use our printing service today and enjoy convenient,
               affordable printing services.
             </Paragraph>
           </Col>
           <Col xs={24} md={8} style={{ textAlign: "right" }}>
-            <Button
-              size="large"
-              style={{
-                background: "#fff",
-                borderColor: "#fff",
-                color: token.colorPrimary,
-              }}
-            >
-              Get Started Now
-            </Button>
+            <Link href="/print">
+              <Button
+                size="large"
+                style={{
+                  background: "#fff",
+                  borderColor: "#fff",
+                  color: token.colorPrimary,
+                }}
+              >
+                Get Started Now
+              </Button>
+            </Link>
           </Col>
         </Row>
       </Card>
