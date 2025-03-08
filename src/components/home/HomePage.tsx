@@ -25,6 +25,7 @@ import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import { useEffect, useState, useRef } from "react";
 import React from "react";
 import { PriceCard } from "./PriceCard";
+import styles from "./HomePage.module.css";
 
 const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || "";
 
@@ -211,7 +212,7 @@ const HomePage = () => {
           {features.map((feature, index) => (
             <Col key={index} xs={24} sm={12} lg={6}>
               <Card
-                className="feature-card slide-up"
+                className={`${styles["feature-card"]} slide-up`}
                 style={{
                   height: "100%",
                   borderRadius: 16,
