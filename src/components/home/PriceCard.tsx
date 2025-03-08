@@ -21,9 +21,8 @@ interface PriceCardProps {
 export const PriceCard = ({ plan, token }: PriceCardProps) => {
   return (
     <Card
-      className={`${styles["price-card"]} ${
-        plan.title === "Color Printing" ? styles["rainbow-border"] : ""
-      }`}
+      className={`${styles["price-card"]} ${plan.title === "Color Printing" ? styles["rainbow-border"] : ""
+        }`}
       hoverable
       title={
         <Space direction="vertical" size={4} style={{ width: "100%" }}>
@@ -89,7 +88,7 @@ export const PriceCard = ({ plan, token }: PriceCardProps) => {
           Currently Unavailable
         </Button>
       ) : (
-        <Link href="/create-order">
+        <Link href="/print">
           <Button type="primary" block size="large" style={{ borderRadius: 8 }}>
             Select
           </Button>
