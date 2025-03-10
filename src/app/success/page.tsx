@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Result, Button, Spin, Typography, Space } from "antd";
 import Link from "next/link";
@@ -8,7 +8,7 @@ import MainLayout from "@/components/layout/MainLayout";
 
 const { Title, Paragraph } = Typography;
 
-const PaymentSuccessPage = () => {
+const PaymentContent = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
@@ -49,63 +49,83 @@ const PaymentSuccessPage = () => {
         verifyPayment();
     }, [searchParams]);
 
-    if (loading) {
-        return (
-            <MainLayout>
-                <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minHeight: '60vh',
-                    padding: '20px'
-                }}>
-                    <Spin size="large" />
-                    <Paragraph style={{ marginTop: 24 }}>
-                        Verifying your payment...
-                    </Paragraph>
-                </div>
-            </MainLayout>
-        );
-    }
+    // if (loading) {
+    //     return (
+    //         <div style={{
+    //             display: 'flex',
+    //             flexDirection: 'column',
+    //             alignItems: 'center',
+    //             justifyContent: 'center',
+    //             minHeight: '60vh',
+    //             padding: '20px'
+    //         }}>
+    //             <Spin size="large" />
+    //             <Paragraph style={{ marginTop: 24 }}>
+    //                 Verifying your payment...
+    //             </Paragraph>
+    //         </div>
+    //     );
+    // }
 
     if (error) {
         return (
-            <MainLayout>
-                <Result
-                    status="error"
-                    title="Payment Verification Failed"
-                    subTitle={error}
-                    extra={[
-                        <Link href="/print" key="retry">
-                            <Button type="primary">Try Again</Button>
-                        </Link>,
-                        <Link href="/" key="home">
-                            <Button>Back to Home</Button>
-                        </Link>,
-                    ]}
-                />
-            </MainLayout>
+            <Result
+                status="error"
+                title="Payment Verification Failed"
+                subTitle={error}
+                extra={[
+                    <Link href="/print" key="retry">
+                        <Button type="primary">Try Again</Button>
+                    </Link>,
+                    <Link href="/" key="home">
+                        <Button>Back to Home</Button>
+                    </Link>,
+                ]}
+            />
         );
     }
 
     return (
+
+        <Result
+            status="success"
+            title="Payment Successful!"
+            subTitle={`Order number: ${orderId || 'Unknown'}. We'll notify you when your print job is ready.`}
+            extra={[
+                <Link href="/orders" key="orders">
+                    <Button type="primary" size="large">
+                        View My Orders
+                    </Button>
+                </Link>,
+                <Link href="/" key="home">
+                    <Button size="large">Back to Home</Button>
+                </Link>,
+            ]}
+        />
+    );
+};
+
+const PaymentSuccessPage = () => {
+    const LoadingFallback = () => (
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '60vh',
+            padding: '20px'
+        }}>
+            <Spin size="large" />
+            <Paragraph style={{ marginTop: 24 }}>
+                Verifying your payment...
+            </Paragraph>
+        </div>
+    );
+    return (
         <MainLayout>
-            <Result
-                status="success"
-                title="Payment Successful!"
-                subTitle={`Order number: ${orderId || 'Unknown'}. We'll notify you when your print job is ready.`}
-                extra={[
-                    <Link href="/orders" key="orders">
-                        <Button type="primary" size="large">
-                            View My Orders
-                        </Button>
-                    </Link>,
-                    <Link href="/" key="home">
-                        <Button size="large">Back to Home</Button>
-                    </Link>,
-                ]}
-            />
+            <Suspense fallback={<LoadingFallback />}>
+                <PaymentContent />
+            </Suspense>
         </MainLayout>
     );
 };
