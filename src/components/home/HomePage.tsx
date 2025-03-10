@@ -27,7 +27,7 @@ import React from "react";
 import { PriceCard } from "./PriceCard";
 import styles from "./HomePage.module.css";
 
-const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || "";
+const googleApiKey = process.env.NEXT_GOOGLE_API_KEY || "";
 
 const { Title, Paragraph, Text } = Typography;
 const { useToken } = theme;
@@ -54,7 +54,7 @@ const pricing = [
     subtitle: "Most economical",
     price: "0.2",
     type: "Standard A4",
-    features: ["Single/Double-sided printing", "80g paper", "Fast processing"],
+    features: ["Single/Double-sided printing", "70g paper", "Fast processing"],
     isPopular: true,
     isDisabled: false,
   },
@@ -63,7 +63,7 @@ const pricing = [
     subtitle: "Perfect for presentations",
     price: "0.7",
     type: "Standard A4",
-    features: ["Single/Double-sided printing", "80g paper", "Vibrant colors"],
+    features: ["Single/Double-sided printing", "70g paper", "Vibrant colors"],
     isPopular: false,
     isDisabled: false,
   },
