@@ -45,7 +45,7 @@ const Navbar = () => {
         display: "flex",
         alignItems: "center",
         background: token.colorBgContainer,
-        padding: "0 24px",
+        padding: "0 clamp(4px, 2vw, 24px)",
         boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03)",
       }}
     >
@@ -70,12 +70,12 @@ const Navbar = () => {
           border: "none",
           display: "flex",
           justifyContent: "center",
-          fontSize: "16px",
+          fontSize: "16px"
         }}
         items={navItems.map((item) => ({
           ...item,
           key: item.key,
-          label: <Link href="/">{item.label}</Link>, // TODO: Add link to each item
+          label: <Link href={item.key}>{item.label}</Link>,
         }))}
       />
       {/* 右侧按钮部分 */}
@@ -84,12 +84,12 @@ const Navbar = () => {
           <Button
             type="text"
             icon={<UserOutlined />}
-            style={{ fontSize: "16px" }}
+            style={{ fontSize: "16px", padding: "0 clamp(4px, 2vw, 24px)" }}
           >
             Login
           </Button>
         </Link>
-        <Link href="/">  {/* TODO: Add link to create order */}
+        <Link href="/print">
           <Button
             type="primary"
             icon={<PrinterOutlined />}

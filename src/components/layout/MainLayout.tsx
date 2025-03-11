@@ -15,7 +15,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       <Navbar />
       <Content
         style={{
-          padding: "50px 50px",
+          padding: "0 clamp(12px, 2vw, 24px)",
           backgroundColor: "white",
           border: "1px solid #e0e0e0",
           borderStyle: "solid none solid none",
@@ -24,7 +24,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         {children}
       </Content>
       <Footer style={{ textAlign: "center" }}>
-        PrintHub ©{new Date().getFullYear()} Community Printing Service
+        ©{new Date().getFullYear()} South Wharf Drive Community Printing System
       </Footer>
     </Layout>
   );

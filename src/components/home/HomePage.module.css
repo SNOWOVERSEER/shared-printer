@@ -1,0 +1,95 @@
+.fade-in {
+  animation: fadeIn 1s ease-out;
+}
+
+.slide-up {
+  animation: slideUp 1s ease-out;
+}
+
+.rainbow-border {
+  position: relative;
+  z-index: 0;
+}
+
+.rainbow-border::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg,
+      #ff0000,
+      #ff8000,
+      #ffff00,
+      #00ff00,
+      #0000ff,
+      #4b0082,
+      #8f00ff,
+      #ff0000);
+  border-radius: 18px;
+  z-index: -1;
+  animation: rotate 4s linear infinite;
+}
+
+.rainbow-border::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: white;
+  border-radius: 16px;
+  z-index: -1;
+}
+
+@keyframes rotate {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.feature-card {
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.price-card {
+  transition: all 0.3s ease !important;
+}
+
+.price-card:hover {
+  transform: translateY(-10px) !important;
+  box-shadow: 0 12px 24px #1677ff !important;
+}
