@@ -27,7 +27,7 @@ import React from "react";
 import { PriceCard } from "./PriceCard";
 import styles from "./HomePage.module.css";
 
-const googleApiKey = process.env.NEXT_GOOGLE_API_KEY || "";
+const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || "";
 
 const { Title, Paragraph, Text } = Typography;
 const { useToken } = theme;
