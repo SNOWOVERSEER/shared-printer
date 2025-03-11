@@ -10,7 +10,8 @@ import {
     Divider,
     Alert,
     Result,
-    theme
+    theme,
+    message
 } from "antd";
 import {
     CreditCardOutlined,
@@ -22,13 +23,9 @@ import {
 } from "@ant-design/icons";
 import type { UploadFile } from "antd/es/upload/interface";
 import Link from "next/link";
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
-import StripePaymentForm from '../payment/StripePaymentForm';
+import { useRouter } from "next/navigation";
 import styles from './PrintPage.module.css';
 
-// Load Stripe
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_your_key');
 
 const { Title, Paragraph, Text } = Typography;
 const { useToken } = theme;
@@ -51,6 +48,7 @@ const PaymentStep = ({
     onComplete
 }: PaymentStepProps) => {
     const { token } = useToken();
+    const router = useRouter();
     const [paymentMethod, setPaymentMethod] = useState("credit");
     const [isProcessing, setIsProcessing] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
@@ -61,6 +59,10 @@ const PaymentStep = ({
     const handlePaymentMethodChange = (e: any) => {
         setPaymentMethod(e.target.value);
         setPaymentError(null);
+    };
+
+    const generateOrderId = () => {
+        return `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
     };
 
     // Handle WeChat/Alipay payment
@@ -88,6 +90,65 @@ const PaymentStep = ({
         console.error('Payment error:', error);
         setPaymentError(error);
     };
+
+    const handleStripePayment = async () => {
+        try {
+            setIsProcessing(true);
+            setPaymentError(null);
+
+            const newOrderId = generateOrderId();
+            setOrderId(newOrderId);
+
+            const metadata = {
+                fileId: fileList[0]?.uid || 'unknown',
+                fileName: fileList[0]?.name || 'unknown',
+                colorMode: printOptions.colorMode,
+                sides: printOptions.sides,
+                paperSize: printOptions.paperSize,
+                copies: printOptions.copies,
+                deliveryMethod: deliveryInfo.deliveryMethod,
+                building: deliveryInfo.building,
+                phone: deliveryInfo.phone,
+            };
+
+            console.log('metadata', metadata);
+
+            // CreateCheckout Session
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    amount: checkoutPrice,
+                    orderId: newOrderId,
+                    customerEmail: deliveryInfo.email,
+                    customerName: deliveryInfo.name,
+                    metadata
+                }),
+            });
+
+            const { sessionId, url, error } = await response.json();
+
+            if (error) {
+                throw new Error(error.message);
+            }
+
+            // redirect to Stripe Checkout page
+            if (url) {
+                router.push(url);
+            } else {
+                throw new Error('No checkout URL returned');
+            }
+        } catch (err: any) {
+            setIsProcessing(false);
+            setPaymentError(err.message || 'An error occurred during payment processing');
+            message.error('Payment initialization failed. Please try again.');
+            console.error('Payment error:', err);
+        }
+    };
+
+
 
     // Generate QR code for WeChat/Alipay payment
     const renderQRCode = () => {
@@ -130,6 +191,7 @@ const PaymentStep = ({
 
     // Render order summary
     const renderOrderSummary = () => {
+        console.log('printOptions', printOptions);
         return (
             <Card
                 title={
@@ -265,14 +327,27 @@ const PaymentStep = ({
                     {paymentMethod === 'wechat' || paymentMethod === 'alipay' ? (
                         renderQRCode()
                     ) : (
-                        <Elements stripe={stripePromise}>
-                            <StripePaymentForm
-                                amount={checkoutPrice}
-                                onSuccess={handleStripeSuccess}
-                                onError={handleStripeError}
+                        <div style={{ textAlign: 'center' }}>
+                            <Paragraph>
+                                You will be redirected to Stripe's secure payment page to complete your payment.
+                            </Paragraph>
+                            <Button
+                                type="primary"
+                                size="large"
+                                icon={<CreditCardOutlined />}
+                                onClick={handleStripePayment}
+                                loading={isProcessing}
                                 disabled={isProcessing}
-                            />
-                        </Elements>
+                                style={{
+                                    height: 50,
+                                    width: '100%',
+                                    marginTop: 16,
+                                    borderRadius: 8
+                                }}
+                            >
+                                Pay with Stripe ${checkoutPrice.toFixed(2)}
+                            </Button>
+                        </div>
                     )}
                 </div>
 
@@ -340,25 +415,25 @@ const PaymentStep = ({
                             style={{ marginTop: 16, marginBottom: 24, borderRadius: 8 }}
                         />
 
-                        {(paymentMethod === 'wechat' || paymentMethod === 'alipay') && (
-                            <Row justify="space-between" style={{ marginTop: 40 }}>
-                                <Col>
-                                    <Button
-                                        size="large"
-                                        onClick={onPrevious}
-                                        disabled={isProcessing}
-                                        style={{
-                                            height: "50px",
-                                            padding: "0 30px",
-                                            fontSize: "16px",
-                                            borderRadius: "8px",
-                                        }}
-                                    >
-                                        Previous
-                                    </Button>
-                                </Col>
-                            </Row>
-                        )}
+
+                        <Row justify="space-between" style={{ marginTop: 40 }}>
+                            <Col>
+                                <Button
+                                    size="large"
+                                    onClick={onPrevious}
+                                    disabled={isProcessing}
+                                    style={{
+                                        height: "50px",
+                                        padding: "0 30px",
+                                        fontSize: "16px",
+                                        borderRadius: "8px",
+                                    }}
+                                >
+                                    Previous
+                                </Button>
+                            </Col>
+                        </Row>
+
                     </div>
                 </>
             ) : (

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
     Typography,
     Upload,
@@ -52,6 +53,7 @@ const PrintPage = () => {
     const [form] = Form.useForm();
     const [deliveryForm] = Form.useForm();
     const [printOptions, setPrintOptions] = useState<any>({});
+    const [deliveryInfo, setDeliveryInfo] = useState<any>({});
 
     const defaultPrintOptions = {
         copies: 1,
@@ -98,7 +100,7 @@ const PrintPage = () => {
         } else if (currentStep === 1) {
             form.validateFields()
                 .then(values => {
-                    console.log('Print options:', values);
+                    console.log('Print options get and set:', values);
                     setPrintOptions(values);
                     setCurrentStep(2);
                 })
@@ -112,6 +114,7 @@ const PrintPage = () => {
             deliveryForm.validateFields()
                 .then(values => {
                     console.log('Delivery info:', values);
+                    setDeliveryInfo(values);
                     setCurrentStep(4);
                 })
                 .catch(info => {
@@ -187,7 +190,7 @@ const PrintPage = () => {
                 {currentStep === 2 && (
                     <ConfirmTaskStep
                         fileList={fileList}
-                        printOptions={form.getFieldsValue()}
+                        printOptions={printOptions}
                         filePages={filePages}
                         checkoutPrice={price}
                         onPrevious={handlePrevious}
@@ -208,7 +211,7 @@ const PrintPage = () => {
                     <PaymentStep
                         fileList={fileList}
                         printOptions={printOptions}
-                        deliveryInfo={deliveryForm.getFieldsValue()}
+                        deliveryInfo={deliveryInfo}
                         checkoutPrice={price}
                         onPrevious={handlePrevious}
                         onComplete={handleOrderComplete}
