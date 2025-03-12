@@ -32,11 +32,11 @@ const Navbar = () => {
       key: "/orders",
       icon: <FileOutlined />,
     },
-    {
-      label: "Help",
-      key: "/help",
-      icon: <QuestionCircleOutlined />,
-    },
+    // {
+    //   label: "Help",
+    //   key: "/help",
+    //   icon: <QuestionCircleOutlined />,
+    // },
   ];
 
   return (
@@ -70,7 +70,7 @@ const Navbar = () => {
           border: "none",
           display: "flex",
           justifyContent: "center",
-          fontSize: "16px"
+          fontSize: "16px",
         }}
         items={navItems.map((item) => ({
           ...item,
@@ -80,7 +80,9 @@ const Navbar = () => {
       />
       {/* 右侧按钮部分 */}
       <div style={{ display: "flex", gap: "10px", flex: 1 }}>
-        <Link href="/">  {/* TODO: Add link to login */}
+        <Link href="/login">
+          {" "}
+          {/* TODO: Add link to login */}
           <Button
             type="text"
             icon={<UserOutlined />}
