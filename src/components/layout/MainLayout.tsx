@@ -15,7 +15,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       <Navbar />
       <Content
         style={{
-          padding: "0 clamp(12px, 2vw, 24px)",
+          padding: "0",
           backgroundColor: "white",
           border: "1px solid #e0e0e0",
           borderStyle: "solid none solid none",
