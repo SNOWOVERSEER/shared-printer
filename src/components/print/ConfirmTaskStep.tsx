@@ -10,13 +10,19 @@ import {
     List,
     Tag,
     theme,
-    Descriptions
+    Descriptions,
+    Alert
 } from "antd";
 import {
     FileTextOutlined,
     CheckCircleOutlined,
     EditOutlined,
-    PrinterOutlined
+    PrinterOutlined,
+    HomeOutlined,
+    UserOutlined,
+    MailOutlined,
+    PhoneOutlined,
+    InfoCircleOutlined
 } from "@ant-design/icons";
 import type { UploadFile } from "antd/es/upload/interface";
 
@@ -26,6 +32,7 @@ const { useToken } = theme;
 interface ConfirmTaskStepProps {
     fileList: UploadFile[];
     printOptions: any;
+    deliveryInfo: any;
     filePages: number;
     checkoutPrice: number;
     onPrevious: () => void;
@@ -35,10 +42,11 @@ interface ConfirmTaskStepProps {
 const ConfirmTaskStep = ({
     fileList,
     printOptions,
+    deliveryInfo,
     filePages,
     checkoutPrice,
     onPrevious,
-    onNext
+    onNext,
 }: ConfirmTaskStepProps) => {
     const { token } = useToken();
     const [isConfirming, setIsConfirming] = useState(false);
@@ -64,15 +72,12 @@ const ConfirmTaskStep = ({
         return printOptions.orientation === 'portrait' ? 'Portrait' : 'Landscape';
     };
 
+
     // Handle confirm button click
     const handleConfirm = () => {
         setIsConfirming(true);
-
-        // Simulate API call to create print task
-        setTimeout(() => {
-            setIsConfirming(false);
-            onNext();
-        }, 1000);
+        onNext();
+        setIsConfirming(false);
     };
 
     return (
@@ -151,6 +156,64 @@ const ConfirmTaskStep = ({
                             </Descriptions>
                         </Col>
                     </Row>
+
+                    <Divider style={{ margin: '24px 0' }} />
+
+                    <Row gutter={[16, 16]}>
+                        <Col span={24}>
+                            <Descriptions
+                                title="Delivery Information"
+                                column={1}
+                                bordered
+                                size="small"
+                            >
+                                <Descriptions.Item label="Name">
+                                    <Space>
+                                        <UserOutlined />
+                                        <Text>{deliveryInfo.name}</Text>
+                                    </Space>
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Email">
+                                    <Space>
+                                        <MailOutlined />
+                                        <Text>{deliveryInfo.email}</Text>
+                                    </Space>
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Phone">
+                                    <Space>
+                                        <PhoneOutlined />
+                                        <Text>{deliveryInfo.phone}</Text>
+                                    </Space>
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Delivery Method">
+                                    <Tag color={deliveryInfo.deliveryMethod === 'mailbox' ? 'green' : 'orange'}>
+                                        {deliveryInfo.deliveryMethod}
+                                    </Tag>
+                                </Descriptions.Item>
+
+                                <Descriptions.Item label="Building">
+                                    <Space>
+                                        <HomeOutlined />
+                                        <Text>{deliveryInfo.building} South Wharf Dr</Text>
+                                    </Space>
+                                </Descriptions.Item>
+                                {deliveryInfo.mailboxNumber && (
+                                    <Descriptions.Item label="Mailbox Number">
+                                        <Text>{deliveryInfo.mailboxNumber}</Text>
+                                    </Descriptions.Item>
+                                )}
+                                {deliveryInfo.notes && (
+                                    <Descriptions.Item label="Notes">
+                                        <Text>{deliveryInfo.notes}</Text>
+                                    </Descriptions.Item>
+                                )}
+                            </Descriptions>
+                        </Col>
+
+
+
+
+                    </Row>
                 </Card>
 
                 {/* Price Summary Card */}
@@ -204,8 +267,22 @@ const ConfirmTaskStep = ({
                     </Row>
                 </Card>
 
+                <Row>
+                    <Col span={24}>
+                        <Alert
+                            message="Please review your print task details before proceeding, you can not go back to the previous step once you place the order"
+                            type="info"
+                            showIcon
+                            icon={<InfoCircleOutlined />}
+                            style={{ marginBottom: 16, borderRadius: 8 }}
+                        />
+                    </Col>
+                </Row>
+
+
+
                 {/* Action Buttons */}
-                <Row justify="space-between" style={{ marginTop: 40 }}>
+                <Row justify="space-between" style={{ marginTop: 16 }}>
                     <Col>
                         <Button
                             size="large"
@@ -234,7 +311,7 @@ const ConfirmTaskStep = ({
                                 borderRadius: "8px",
                             }}
                         >
-                            Confirm and Continue
+                            Place Order and Make Payment
                         </Button>
                     </Col>
                 </Row>

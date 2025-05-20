@@ -22,24 +22,30 @@ import {
 } from "@ant-design/icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import useAuthStore from "@/store/authStore";
+import API from "@/api";
+import { RegisterRequest } from "@/api/services/authService";
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 
+
 const AuthPage = () => {
+  const [messageApi, contextHolder] = message.useMessage();
   const [activeTab, setActiveTab] = useState("login");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { login } = useAuthStore();
 
   const onFinishLogin = async (values: any) => {
     setLoading(true);
     try {
-      // TODO: Add login logic
+      await login(values);
       console.log("Login values:", values);
-      message.success("Login successfully");
-      router.push("/dashboard");
+      messageApi.success("Login successfully");
+      router.push("/");
     } catch (error) {
-      message.error("Login failed, please check your email and password");
+      messageApi.error("Login failed, please check your username and password");
     } finally {
       setLoading(false);
     }
@@ -48,129 +54,134 @@ const AuthPage = () => {
   const onFinishRegister = async (values: any) => {
     setLoading(true);
     try {
-      // TODO: Add register logic
+      const registerData: RegisterRequest = {
+        username: values.username,
+        email: values.email,
+        password: values.password,
+      };
+
+      await API.auth.register(registerData);
+
       console.log("Register values:", values);
-      message.success("Register successfully, please login");
+      messageApi.success("Register successfully, please login");
       setActiveTab("login");
     } catch (error) {
-      message.error("Register failed, please try again later");
+      messageApi.error("Register failed, please try again later");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "calc(100vh - 64px)",
-        padding: "40px clamp(12px, 2vw, 24px)",
-        background: "#f5f5f5",
-      }}
-    >
-      <Card
+    <>
+      {contextHolder}
+      <div
         style={{
-          width: "100%",
-          maxWidth: 480,
-          borderRadius: 16,
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "calc(100vh - 64px)",
+          padding: "40px clamp(12px, 2vw, 24px)",
+          background: "#f5f5f5",
         }}
-        styles={{ body: { padding: "32" } }}
       >
-        <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <Title level={2} style={{ marginBottom: 8 }}>
-            Welcome to the printing service
-          </Title>
-          <Paragraph type="secondary">
-            Login or register to start using our printing service
-          </Paragraph>
-        </div>
-
-        <Tabs
-          activeKey={activeTab}
-          onChange={setActiveTab}
-          centered
-          size="large"
+        <Card
+          style={{
+            width: "100%",
+            maxWidth: 480,
+            borderRadius: 16,
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+          }}
+          styles={{ body: { padding: "32" } }}
         >
-          <TabPane tab="Login" key="login">
-            <Form
-              name="login_form"
-              initialValues={{ remember: true }}
-              onFinish={onFinishLogin}
-              layout="vertical"
-              size="large"
-            >
-              <Form.Item
-                name="email"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter your email",
-                  },
-                  {
-                    type: "email",
-                    message: "Please enter a valid email address",
-                  },
-                ]}
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <Title level={2} style={{ marginBottom: 8 }}>
+              Welcome to the printing service
+            </Title>
+            <Paragraph type="secondary">
+              Login or register to start using our printing service
+            </Paragraph>
+          </div>
+
+          <Tabs
+            activeKey={activeTab}
+            onChange={setActiveTab}
+            centered
+            size="large"
+          >
+            <TabPane tab="Login" key="login">
+              <Form
+                name="login_form"
+                initialValues={{ remember: true }}
+                onFinish={onFinishLogin}
+                layout="vertical"
+                size="large"
               >
-                <Input
-                  prefix={<MailOutlined />}
-                  placeholder="Email"
-                  size="large"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="password"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter your password",
-                  },
-                ]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined />}
-                  placeholder="Password"
-                  size="large"
-                />
-              </Form.Item>
-
-              <Form.Item>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
+                <Form.Item
+                  name="username"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter your username",
+                    },
+                  ]}
                 >
-                  <Form.Item name="remember" valuePropName="checked" noStyle>
-                    <Checkbox>Remember me</Checkbox>
-                  </Form.Item>
-                  <Link href="/forgot-password">Forgot password?</Link>
-                </div>
-              </Form.Item>
+                  <Input
+                    prefix={<MailOutlined />}
+                    placeholder="Username"
+                    size="large"
+                  />
+                </Form.Item>
 
-              <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  block
-                  size="large"
-                  loading={loading}
+                <Form.Item
+                  name="password"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter your password",
+                    },
+                  ]}
                 >
-                  Login
-                </Button>
-              </Form.Item>
-            </Form>
+                  <Input.Password
+                    prefix={<LockOutlined />}
+                    placeholder="Password"
+                    size="large"
+                  />
+                </Form.Item>
 
-            {/* <Divider plain>
+                <Form.Item>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Form.Item name="remember" valuePropName="checked" noStyle>
+                      <Checkbox>Remember me</Checkbox>
+                    </Form.Item>
+                    <Link href="/forgot-password">Forgot password?</Link>
+                  </div>
+                </Form.Item>
+
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    block
+                    size="large"
+                    loading={loading}
+                  >
+                    Login
+                  </Button>
+                </Form.Item>
+              </Form>
+
+              {/* <Divider plain>
               <Text type="secondary">Or login with</Text>
             </Divider> */}
 
-            {/* <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+              {/* <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
               <Button
                 block
                 icon={<GoogleOutlined />}
@@ -196,135 +207,137 @@ const AuthPage = () => {
                 Facebook
               </Button>
             </div> */}
-          </TabPane>
+            </TabPane>
 
-          <TabPane tab="Register" key="register">
-            <Form
-              name="register_form"
-              onFinish={onFinishRegister}
-              layout="vertical"
-              size="large"
-            >
-              <Form.Item
-                name="name"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter your name",
-                  },
-                ]}
+            <TabPane tab="Register" key="register">
+              <Form
+                name="register_form"
+                onFinish={onFinishRegister}
+                layout="vertical"
+                size="large"
               >
-                <Input
-                  prefix={<UserOutlined />}
-                  placeholder="Name"
-                  size="large"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="email"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter your email",
-                  },
-                  {
-                    type: "email",
-                    message: "Please enter a valid email address",
-                  },
-                ]}
-              >
-                <Input
-                  prefix={<MailOutlined />}
-                  placeholder="Email"
-                  size="large"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="password"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter your password",
-                  },
-                  {
-                    min: 8,
-                    message: "Password must be at least 8 characters long",
-                  },
-                ]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined />}
-                  placeholder="Password"
-                  size="large"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="confirm"
-                dependencies={["password"]}
-                rules={[
-                  {
-                    required: true,
-                    message: "Please confirm your password",
-                  },
-                  ({ getFieldValue }) => ({
-                    validator(_, value) {
-                      if (!value || getFieldValue("password") === value) {
-                        return Promise.resolve();
-                      }
-                      return Promise.reject(
-                        new Error("The passwords you entered do not match")
-                      );
+                <Form.Item
+                  name="username"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter your username",
                     },
-                  }),
-                ]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined />}
-                  placeholder="Confirm password"
-                  size="large"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="agreement"
-                valuePropName="checked"
-                rules={[
-                  {
-                    validator: (_, value) =>
-                      value
-                        ? Promise.resolve()
-                        : Promise.reject(
-                          new Error("Please read and agree to the terms")
-                        ),
-                  },
-                ]}
-              >
-                <Checkbox>
-                  I have read and agree to the{" "}
-                  <Link href="/terms">terms of service</Link> and{" "}
-                  <Link href="/privacy">privacy policy</Link>
-                </Checkbox>
-              </Form.Item>
-
-              <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  block
-                  size="large"
-                  loading={loading}
+                  ]}
                 >
-                  Register
-                </Button>
-              </Form.Item>
-            </Form>
-          </TabPane>
-        </Tabs>
-      </Card>
-    </div>
+                  <Input
+                    prefix={<UserOutlined />}
+                    placeholder="Username"
+                    size="large"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="email"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter your email",
+                    },
+                    {
+                      type: "email",
+                      message: "Please enter a valid email address",
+                    },
+                  ]}
+                >
+                  <Input
+                    prefix={<MailOutlined />}
+                    placeholder="Email"
+                    size="large"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="password"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter your password",
+                    },
+                    {
+                      min: 8,
+                      message: "Password must be at least 8 characters long",
+                    },
+                  ]}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined />}
+                    placeholder="Password"
+                    size="large"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="confirm"
+                  dependencies={["password"]}
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please confirm your password",
+                    },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        if (!value || getFieldValue("password") === value) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(
+                          new Error("The passwords you entered do not match")
+                        );
+                      },
+                    }),
+                  ]}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined />}
+                    placeholder="Confirm password"
+                    size="large"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="agreement"
+                  valuePropName="checked"
+                  rules={[
+                    {
+                      validator: (_, value) =>
+                        value
+                          ? Promise.resolve()
+                          : Promise.reject(
+                            new Error("Please read and agree to the terms")
+                          ),
+                    },
+                  ]}
+                >
+                  <Checkbox>
+                    I have read and agree to the{" "}
+                    <Link href="/terms">terms of service</Link> and{" "}
+                    <Link href="/privacy">privacy policy</Link>
+                  </Checkbox>
+                </Form.Item>
+
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    block
+                    size="large"
+                    loading={loading}
+                  >
+                    Register
+                  </Button>
+                </Form.Item>
+              </Form>
+            </TabPane>
+          </Tabs>
+        </Card>
+      </div>
+    </>
+
   );
 };
 

@@ -19,7 +19,8 @@ import {
     LockOutlined,
     CheckCircleOutlined,
     DollarOutlined,
-    ShoppingCartOutlined
+    ShoppingCartOutlined,
+    BankOutlined
 } from "@ant-design/icons";
 import type { UploadFile } from "antd/es/upload/interface";
 import Link from "next/link";
@@ -37,6 +38,8 @@ interface PaymentStepProps {
     checkoutPrice: number;
     onPrevious: () => void;
     onComplete: () => void;
+    orderCreated: boolean;
+    orderId: string;
 }
 
 const PaymentStep = ({
@@ -45,59 +48,32 @@ const PaymentStep = ({
     deliveryInfo,
     checkoutPrice,
     onPrevious,
-    onComplete
+    onComplete,
+    orderCreated,
+    orderId
 }: PaymentStepProps) => {
     const { token } = useToken();
     const router = useRouter();
     const [paymentMethod, setPaymentMethod] = useState("credit");
     const [isProcessing, setIsProcessing] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
-    const [orderId, setOrderId] = useState('');
     const [paymentError, setPaymentError] = useState<string | null>(null);
-
+    const [completedPaymentMethod, setCompletedPaymentMethod] = useState<string>("");
+    const [messageApi, contextHolder] = message.useMessage();
     // Handle payment method change
     const handlePaymentMethodChange = (e: any) => {
         setPaymentMethod(e.target.value);
         setPaymentError(null);
     };
 
-    const generateOrderId = () => {
-        return `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
-    };
 
-    // Handle WeChat/Alipay payment
-    const handleQRPayment = () => {
-        setIsProcessing(true);
-        setPaymentError(null);
 
-        // Simulate payment processing
-        setTimeout(() => {
-            setIsProcessing(false);
-            setIsCompleted(true);
-            setOrderId(`ORD-${Math.floor(100000 + Math.random() * 900000)}`);
-        }, 2000);
-    };
 
-    // Handle successful Stripe payment
-    const handleStripeSuccess = (paymentId: string) => {
-        console.log('Payment successful:', paymentId);
-        setIsCompleted(true);
-        setOrderId(`ORD-${Math.floor(100000 + Math.random() * 900000)}`);
-    };
-
-    // Handle Stripe payment error
-    const handleStripeError = (error: string) => {
-        console.error('Payment error:', error);
-        setPaymentError(error);
-    };
 
     const handleStripePayment = async () => {
         try {
             setIsProcessing(true);
             setPaymentError(null);
-
-            const newOrderId = generateOrderId();
-            setOrderId(newOrderId);
 
             const metadata = {
                 fileId: fileList[0]?.uid || 'unknown',
@@ -109,6 +85,7 @@ const PaymentStep = ({
                 deliveryMethod: deliveryInfo.deliveryMethod,
                 building: deliveryInfo.building,
                 phone: deliveryInfo.phone,
+                order_id: orderId
             };
 
             console.log('metadata', metadata);
@@ -121,7 +98,7 @@ const PaymentStep = ({
                 },
                 body: JSON.stringify({
                     amount: checkoutPrice,
-                    orderId: newOrderId,
+                    orderId: orderId,
                     customerEmail: deliveryInfo.email,
                     customerName: deliveryInfo.name,
                     metadata
@@ -143,50 +120,9 @@ const PaymentStep = ({
         } catch (err: any) {
             setIsProcessing(false);
             setPaymentError(err.message || 'An error occurred during payment processing');
-            message.error('Payment initialization failed. Please try again.');
+            messageApi.error('Payment initialization failed. Please try again.');
             console.error('Payment error:', err);
         }
-    };
-
-
-
-    // Generate QR code for WeChat/Alipay payment
-    const renderQRCode = () => {
-        return (
-            <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <div
-                    style={{
-                        width: 200,
-                        height: 200,
-                        background: '#f0f0f0',
-                        margin: '0 auto 20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '1px solid #d9d9d9',
-                        borderRadius: 4
-                    }}
-                >
-                    {isProcessing ? (
-                        <div className={styles["loading-spinner"]} />
-                    ) : (
-                        <Text type="secondary">QR Code Placeholder</Text>
-                    )}
-                </div>
-                <Paragraph>
-                    Please scan the QR code with {paymentMethod === 'wechat' ? 'WeChat' : 'Alipay'} to complete payment
-                </Paragraph>
-                <Button
-                    type="primary"
-                    onClick={handleQRPayment}
-                    loading={isProcessing}
-                    disabled={isProcessing}
-                    style={{ marginTop: 16 }}
-                >
-                    Simulate Successful Payment
-                </Button>
-            </div>
-        );
     };
 
     // Render order summary
@@ -300,32 +236,64 @@ const PaymentStep = ({
                     disabled={isProcessing}
                 >
                     <Space direction="vertical" style={{ width: '100%' }}>
-                        {/* <Radio value="wechat" style={{ padding: '12px', width: '100%', border: '1px solid #f0f0f0', borderRadius: '8px', marginRight: 0 }}>
+                        <Radio value="bank" style={{ padding: '12px', width: '100%', border: '1px solid #f0f0f0', borderRadius: '8px', marginRight: 0 }}>
                             <Space>
-                                <img src="/icons/wechat-pay.svg" alt="WeChat Pay" style={{ width: 24, height: 24 }} />
-                                <Text strong>WeChat Pay</Text>
+                                <BankOutlined style={{ color: token.colorPrimary, fontSize: 18 }} />
+                                <Text strong>Bank Transfer</Text>
                             </Space>
                         </Radio>
-
-                        <Radio value="alipay" style={{ padding: '12px', width: '100%', border: '1px solid #f0f0f0', borderRadius: '8px', marginRight: 0 }}>
-                            <Space>
-                                <img src="/icons/alipay.svg" alt="Alipay" style={{ width: 24, height: 24 }} />
-                                <Text strong>Alipay</Text>
-                            </Space>
-                        </Radio> */}
 
                         <Radio value="credit" style={{ padding: '12px', width: '100%', border: '1px solid #f0f0f0', borderRadius: '8px', marginRight: 0 }}>
                             <Space>
                                 <CreditCardOutlined style={{ color: token.colorPrimary, fontSize: 18 }} />
-                                <Text strong>Credit/Debit Card</Text>
+                                <Text strong>Credit/Debit Card (Stripe)</Text>
                             </Space>
                         </Radio>
                     </Space>
                 </Radio.Group>
 
                 <div style={{ marginTop: 24 }}>
-                    {paymentMethod === 'wechat' || paymentMethod === 'alipay' ? (
-                        renderQRCode()
+                    {paymentMethod === 'bank' ? (
+                        <div style={{ textAlign: 'center' }}>
+                            <Alert
+                                message="Bank Transfer Details"
+                                description={
+                                    <div>
+                                        <p><strong>PayID:</strong> 0432368169</p>
+                                        <p><strong>Important:</strong> Please include your reference number in the transfer description:</p>
+                                        <p style={{
+                                            background: '#f5f5f5',
+                                            padding: '10px',
+                                            borderRadius: '4px',
+                                            margin: '10px 0'
+                                        }}>
+                                            Reference: {orderId}
+                                        </p>
+                                    </div>
+                                }
+                                type="info"
+
+                                style={{ marginBottom: 16 }}
+                            />
+                            <Button
+                                type="primary"
+                                size="large"
+                                icon={<CheckCircleOutlined />}
+                                onClick={() => {
+                                    setIsCompleted(true);
+                                    setCompletedPaymentMethod("bank");
+                                    messageApi.success('Thank you for your payment confirmation!');
+                                }}
+                                style={{
+                                    height: 50,
+                                    width: '100%',
+                                    marginTop: 16,
+                                    borderRadius: 8
+                                }}
+                            >
+                                I Confirm I Have Made the Transfer
+                            </Button>
+                        </div>
                     ) : (
                         <div style={{ textAlign: 'center' }}>
                             <Paragraph>
@@ -366,6 +334,31 @@ const PaymentStep = ({
 
     // Render order complete result
     const renderOrderComplete = () => {
+        if (completedPaymentMethod === "bank") {
+            return (
+                <Result
+                    status="info"
+                    title="Payment Confirmation Received"
+                    subTitle={
+                        <>
+                            <p>Order number: {orderId}</p>
+                            <p>Due to potential bank transfer delays, your order status may take some time to update.</p>
+                            <p>You will receive a notification once your order is ready.</p>
+                        </>
+                    }
+                    extra={[
+                        <Link href="/orders" key="orders">
+                            <Button type="primary" size="large" onClick={onComplete}>
+                                View My Orders
+                            </Button>
+                        </Link>,
+                        <Link href="/" key="home">
+                            <Button size="large">Back to Home</Button>
+                        </Link>,
+                    ]}
+                />
+            );
+        }
         return (
             <Result
                 status="success"
@@ -421,7 +414,7 @@ const PaymentStep = ({
                                 <Button
                                     size="large"
                                     onClick={onPrevious}
-                                    disabled={isProcessing}
+                                    disabled={isProcessing || orderCreated}
                                     style={{
                                         height: "50px",
                                         padding: "0 30px",

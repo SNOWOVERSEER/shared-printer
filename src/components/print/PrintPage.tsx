@@ -35,26 +35,30 @@ import PrintOptionsStep from "./PrintOptionsStep";
 import ConfirmTaskStep from "./ConfirmTaskStep";
 import DeliveryInfoStep from "./DeliveryInfoStep";
 import PaymentStep from "./PaymentStep";
+import useAuthStore from "@/store/authStore";
+import useOrderStore from "@/store/orderStore";
+import { OrderRequest } from "@/api/services/orderService";
 const { Title, Paragraph, Text } = Typography;
-const { Dragger } = Upload;
-const { useToken } = theme;
 
 
 
 const PrintPage = () => {
-    const { token } = useToken();
     const [fileList, setFileList] = useState<UploadFile[]>([]);
     const [currentStep, setCurrentStep] = useState(0);
     const [isVisible, setIsVisible] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isUploaded, setIsUploaded] = useState(false);
+    const [orderCreated, setOrderCreated] = useState(false);
     const [price, setPrice] = useState(0);
     const [filePages, setFilePages] = useState(1);
     const [form] = Form.useForm();
     const [deliveryForm] = Form.useForm();
     const [printOptions, setPrintOptions] = useState<any>({});
     const [deliveryInfo, setDeliveryInfo] = useState<any>({});
-
+    const { user } = useAuthStore();
+    const [uploadedFileInfo, setUploadedFileInfo] = useState<any>(null);
+    const orderStore = useOrderStore();
+    const [createdOrder, setCreatedOrder] = useState<any>(null);
+    const [messageApi, contextHolder] = message.useMessage();
     const defaultPrintOptions = {
         copies: 1,
         colorMode: 'bw',
@@ -76,12 +80,12 @@ const PrintPage = () => {
             icon: <SettingOutlined />,
         },
         {
-            title: 'Confirm Task',
-            icon: <SaveOutlined />,
-        },
-        {
             title: 'Delivery Information',
             icon: <HomeOutlined />,
+        },
+        {
+            title: 'Confirm Task',
+            icon: <SaveOutlined />,
         },
         {
             title: 'Make Payment',
@@ -89,11 +93,47 @@ const PrintPage = () => {
         },
     ];
 
+    const handleConfirmOrder = async () => {
+        try {
+            // 构建订单请求数据
+            const orderData: OrderRequest = {
+                file_name: uploadedFileInfo.filename,
+                file_id: uploadedFileInfo.fileId,
+                pages: uploadedFileInfo.pages,
+                color_mode: printOptions.colorMode || 'bw',
+                sides: printOptions.sides || 'single',
+                paper_size: printOptions.paperSize || 'A4',
+                orientation: printOptions.orientation || 'portrait',
+                pages_per_side: printOptions.pagesPerSide || 1,
+                copies: printOptions.copies || 1,
+                amount: price,
+                delivery_method: deliveryInfo.deliveryMethod,
+                email: deliveryInfo.email,
+                name: deliveryInfo.name,
+                phone: deliveryInfo.phone,
+                building: deliveryInfo.building,
+                mailbox_number: deliveryInfo.mailboxNumber,
+                notes: deliveryInfo.notes
+            };
+
+            // 使用订单store创建订单
+            console.log('Sending order data:', orderData);
+            const createdOrder = await orderStore.createOrder(orderData);
+            setCreatedOrder(createdOrder);
+            setOrderCreated(true);
+            setCurrentStep(4);
+        } catch (error) {
+            console.error('Failed to create order:', error);
+
+
+        }
+    };
+
     // Next button handler
     const handleNext = () => {
         if (currentStep === 0) {
             if (fileList.length === 0) {
-                message.warning('Please upload a file');
+                messageApi.warning('Please upload a file');
                 return;
             }
             setCurrentStep(1);
@@ -108,18 +148,20 @@ const PrintPage = () => {
                     console.log('Validate Failed:', info);
                 });
         } else if (currentStep === 2) {
-
-            setCurrentStep(3);
-        } else if (currentStep === 3) {
             deliveryForm.validateFields()
                 .then(values => {
                     console.log('Delivery info:', values);
                     setDeliveryInfo(values);
-                    setCurrentStep(4);
+                    setCurrentStep(3);
                 })
                 .catch(info => {
                     console.log('Validate Failed:', info);
                 });
+
+
+        } else if (currentStep === 3) {
+            handleConfirmOrder();
+
         }
     };
 
@@ -129,11 +171,13 @@ const PrintPage = () => {
 
     // Previous button handler
     const handlePrevious = () => {
+        if (orderCreated) {
+            return;
+        }
         setCurrentStep(prev => Math.max(0, prev - 1));
     };
 
     return (
-
         <div style={{
             maxWidth: 1200,
             margin: "0 auto",
@@ -145,7 +189,7 @@ const PrintPage = () => {
             </Title>
 
             {/* Guest Login Card */}
-            {!isLoggedIn && (
+            {!user && (
                 <GuestLoginPrompt />
             )}
 
@@ -171,6 +215,7 @@ const PrintPage = () => {
                         isUploaded={isUploaded}
                         setIsUploaded={setIsUploaded}
                         setFilePages={setFilePages}
+                        setUploadedFileInfo={setUploadedFileInfo}
                     />
                 )}
 
@@ -188,23 +233,26 @@ const PrintPage = () => {
                 )}
 
                 {currentStep === 2 && (
-                    <ConfirmTaskStep
-                        fileList={fileList}
-                        printOptions={printOptions}
-                        filePages={filePages}
-                        checkoutPrice={price}
-                        onPrevious={handlePrevious}
-                        onNext={handleNext}
-                    />
-                )}
 
-                {currentStep === 3 && (
                     <DeliveryInfoStep
                         form={deliveryForm}
                         onPrevious={handlePrevious}
                         onNext={handleNext}
-                        isLoggedIn={isLoggedIn}
+                        isLoggedIn={user ? true : false}
                     />
+                )}
+
+                {currentStep === 3 && (
+                    <ConfirmTaskStep
+                        fileList={fileList}
+                        printOptions={printOptions}
+                        filePages={filePages}
+                        deliveryInfo={deliveryInfo}
+                        checkoutPrice={price}
+                        onPrevious={handlePrevious}
+                        onNext={handleNext}
+                    />
+
                 )}
 
                 {currentStep === 4 && (
@@ -215,11 +263,12 @@ const PrintPage = () => {
                         checkoutPrice={price}
                         onPrevious={handlePrevious}
                         onComplete={handleOrderComplete}
+                        orderCreated={orderCreated}
+                        orderId={createdOrder?.order_search_id}
                     />
                 )}
             </Card >
         </div >
-
     );
 };
 

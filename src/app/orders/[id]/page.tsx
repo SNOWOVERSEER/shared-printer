@@ -1,347 +1,301 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import {
-  Typography,
   Card,
+  Typography,
   Descriptions,
-  Button,
-  Steps,
-  Divider,
-  Space,
   Tag,
+  Space,
+  Button,
   Spin,
-  Result,
-} from "antd";
+  Alert,
+  Divider,
+  message,
+  Timeline,
+  Steps,
+  Row,
+  Col,
+  Statistic
+} from 'antd';
 import {
-  CheckCircleOutlined,
-  ClockCircleOutlined,
+  FileTextOutlined,
   PrinterOutlined,
-  InboxOutlined,
-  ArrowLeftOutlined,
-} from "@ant-design/icons";
-import Link from "next/link";
-import { useParams } from "next/navigation";
-import MainLayout from "@/components/layout/MainLayout";
-const { Title, Paragraph } = Typography;
+  MailOutlined,
+  UserOutlined,
+  PhoneOutlined,
+  EnvironmentOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  LoadingOutlined,
+  CloseCircleOutlined,
+  DollarOutlined,
+  ShoppingCartOutlined,
+  BankOutlined,
+  CreditCardOutlined
+} from '@ant-design/icons';
+import useOrderStore from '@/store/orderStore';
+import useAuthStore from '@/store/authStore';
+import Link from 'next/link';
+import MainLayout from '@/components/layout/MainLayout';
 
-// 模拟订单数据
-const mockOrderDetails = {
-  id: "ORD-2023-0001",
-  date: "2023-11-15 14:30",
-  status: "completed",
-  items: [
-    {
-      name: "黑白打印",
-      quantity: 5,
-      price: "¥0.20",
-      total: "¥1.00",
-    },
-  ],
-  total: "¥1.00",
-  customer: {
-    name: "张三",
-    phone: "138****1234",
-    email: "zhang***@example.com",
-  },
-  timeline: [
-    {
-      time: "2023-11-15 14:30",
-      status: "订单创建",
-    },
-    {
-      time: "2023-11-15 14:35",
-      status: "支付完成",
-    },
-    {
-      time: "2023-11-15 15:00",
-      status: "开始打印",
-    },
-    {
-      time: "2023-11-15 15:10",
-      status: "打印完成",
-    },
-    {
-      time: "2023-11-15 15:30",
-      status: "订单完成",
-    },
-  ],
-};
+
+const { Title, Text, Paragraph } = Typography;
+const { Step } = Steps;
 
 const OrderDetailPage = () => {
   const params = useParams();
-  const orderId = params.id as string;
-  const [loading, setLoading] = useState(true);
-  const [orderDetails, setOrderDetails] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-
+  const router = useRouter();
+  const [messageApi, ContextHolder] = message.useMessage();
+  const { fetchOrderById, updateOrderStatus, isLoading, error } = useOrderStore();
+  const [order, setOrder] = useState<any>(null);
+  const { user } = useAuthStore();
   useEffect(() => {
-    // 模拟API请求
-    setLoading(true);
-    setTimeout(() => {
-      if (orderId === "ORD-2023-0001") {
-        setOrderDetails(mockOrderDetails);
-        setError(null);
-      } else {
-        setOrderDetails(null);
-        setError("未找到订单信息");
+    const loadOrder = async () => {
+      try {
+        const orderData = await fetchOrderById(params.id as string);
+        setOrder(orderData);
+        messageApi.success('Order details loaded successfully');
+      } catch (error) {
+        messageApi.error('Failed to load order details');
+        router.push('/orders');
       }
-      setLoading(false);
-    }, 1000);
-  }, [orderId]);
+    };
 
-  // 获取当前订单状态对应的步骤
-  const getCurrentStep = () => {
-    if (!orderDetails) return 0;
+    loadOrder();
+  }, [params.id, fetchOrderById, router, messageApi]);
 
-    switch (orderDetails.status) {
-      case "pending":
-        return 0;
-      case "processing":
-        return 2;
-      case "completed":
-        return 4;
-      case "cancelled":
-        return -1;
-      default:
-        return 0;
+  const handleCancelOrder = async () => {
+    try {
+      await updateOrderStatus(order.id, 'cancelled');
+      messageApi.success('Order cancelled successfully');
+      const updatedOrder = await fetchOrderById(params.id as string);
+      setOrder(updatedOrder);
+    } catch (error) {
+      messageApi.error('Failed to cancel order');
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "50vh",
-        }}
-      >
-        <Spin size="large" tip="加载订单信息..." />
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Spin size="large" />
       </div>
     );
   }
 
-  if (error || !orderDetails) {
+  if (!order) {
     return (
-      <div style={{ maxWidth: 800, margin: "0 auto", padding: "40px 20px" }}>
-        <Result
-          status="404"
-          title="订单未找到"
-          subTitle={error || "无法找到该订单信息，请检查订单号是否正确"}
-          extra={
-            <Link href="/orders">
-              <Button type="primary">返回订单列表</Button>
-            </Link>
-          }
+      <div style={{ maxWidth: 800, margin: '40px auto', padding: '0 20px' }}>
+        <Alert
+          message="Order Not Found"
+          description="The order you are looking for does not exist or you don't have permission to view it."
+          type="error"
+          showIcon
         />
       </div>
     );
   }
+
+  const getStatusStep = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 2;
+      case 'processing':
+        return 1;
+      case 'pending':
+        return 0;
+      case 'cancelled':
+        return -1;
+      default:
+        return 1;
+    }
+  };
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", padding: "40px 20px" }}>
-      <Link href="/orders">
-        <Button
-          type="link"
-          icon={<ArrowLeftOutlined />}
-          style={{ marginBottom: 16, paddingLeft: 0 }}
-        >
-          返回订单列表
-        </Button>
-      </Link>
-
-      <Card
-        style={{
-          borderRadius: 16,
-          marginBottom: 24,
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <Title level={3} style={{ marginBottom: 8 }}>
-              订单 #{orderDetails.id}
-            </Title>
-            <Paragraph type="secondary">
-              下单时间: {orderDetails.date}
-            </Paragraph>
-          </div>
-          <Tag
-            color={
-              orderDetails.status === "completed"
-                ? "success"
-                : orderDetails.status === "processing"
-                ? "processing"
-                : orderDetails.status === "pending"
-                ? "warning"
-                : "default"
-            }
-            style={{ fontSize: 14, padding: "4px 8px", marginTop: 8 }}
-          >
-            {orderDetails.status === "completed"
-              ? "已完成"
-              : orderDetails.status === "processing"
-              ? "处理中"
-              : orderDetails.status === "pending"
-              ? "待处理"
-              : orderDetails.status}
-          </Tag>
+    <>
+      {ContextHolder}
+      <div style={{ maxWidth: 1200, margin: '40px auto', padding: '0 20px' }}>
+        <div style={{ marginBottom: 24 }}>
+          <Title level={2}>Order Details</Title>
+          <Paragraph type="secondary">
+            View and manage your order details
+          </Paragraph>
         </div>
 
-        <Divider />
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <Card>
+            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Title level={4} style={{ margin: 0 }}>
+                  Order Information
+                </Title>
+                <Space>
+                  <Link href="/orders">
+                    <Button>Back to Orders</Button>
+                  </Link>
+                  {order.status === 'pending' && user?.role === 'admin' && (
+                    <Button danger onClick={handleCancelOrder}>
+                      Cancel Order
+                    </Button>
+                  )}
+                </Space>
+              </div>
+              <Divider style={{ margin: '12px 0' }} />
 
-        <Steps
-          current={getCurrentStep()}
-          items={[
-            {
-              title: "订单创建",
-              icon: <ClockCircleOutlined />,
-            },
-            {
-              title: "支付完成",
-              icon: <CheckCircleOutlined />,
-            },
-            {
-              title: "开始打印",
-              icon: <PrinterOutlined />,
-            },
-            {
-              title: "打印完成",
-              icon: <CheckCircleOutlined />,
-            },
-            {
-              title: "订单完成",
-              icon: <InboxOutlined />,
-            },
-          ]}
-          style={{ marginBottom: 40 }}
-        />
-
-        <Divider orientation="left">订单详情</Divider>
-
-        <Descriptions bordered column={{ xs: 1, sm: 2 }}>
-          <Descriptions.Item label="订单号">
-            {orderDetails.id}
-          </Descriptions.Item>
-          <Descriptions.Item label="订单状态">
-            <Tag
-              color={
-                orderDetails.status === "completed"
-                  ? "success"
-                  : orderDetails.status === "processing"
-                  ? "processing"
-                  : orderDetails.status === "pending"
-                  ? "warning"
-                  : "default"
-              }
-            >
-              {orderDetails.status === "completed"
-                ? "已完成"
-                : orderDetails.status === "processing"
-                ? "处理中"
-                : orderDetails.status === "pending"
-                ? "待处理"
-                : orderDetails.status}
-            </Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="下单时间">
-            {orderDetails.date}
-          </Descriptions.Item>
-          <Descriptions.Item label="总金额">
-            {orderDetails.total}
-          </Descriptions.Item>
-          <Descriptions.Item label="联系人">
-            {orderDetails.customer.name}
-          </Descriptions.Item>
-          <Descriptions.Item label="联系电话">
-            {orderDetails.customer.phone}
-          </Descriptions.Item>
-          <Descriptions.Item label="邮箱" span={2}>
-            {orderDetails.customer.email}
-          </Descriptions.Item>
-        </Descriptions>
-
-        <Divider orientation="left">打印项目</Divider>
-
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ borderBottom: "1px solid #f0f0f0" }}>
-              <th style={{ padding: "12px 8px", textAlign: "left" }}>项目</th>
-              <th style={{ padding: "12px 8px", textAlign: "center" }}>数量</th>
-              <th style={{ padding: "12px 8px", textAlign: "right" }}>单价</th>
-              <th style={{ padding: "12px 8px", textAlign: "right" }}>小计</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orderDetails.items.map((item: any, index: number) => (
-              <tr key={index} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                <td style={{ padding: "12px 8px" }}>{item.name}</td>
-                <td style={{ padding: "12px 8px", textAlign: "center" }}>
-                  {item.quantity}
-                </td>
-                <td style={{ padding: "12px 8px", textAlign: "right" }}>
-                  {item.price}
-                </td>
-                <td style={{ padding: "12px 8px", textAlign: "right" }}>
-                  {item.total}
-                </td>
-              </tr>
-            ))}
-            <tr>
-              <td
-                colSpan={3}
-                style={{
-                  padding: "12px 8px",
-                  textAlign: "right",
-                  fontWeight: "bold",
-                }}
+              <Steps
+                current={getStatusStep(order.status)}
+                status={order.status === 'cancelled' ? 'error' : 'process'}
               >
-                总计
-              </td>
-              <td
-                style={{
-                  padding: "12px 8px",
-                  textAlign: "right",
-                  fontWeight: "bold",
-                }}
-              >
-                {orderDetails.total}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                <Step
+                  title="Order Placed"
+                  description={new Date(order.created_at).toLocaleString()}
+                />
+                <Step
+                  title="Processing"
+                  description={order.status === 'processing' ? "Your order is being processed" : "Waiting to process"}
+                />
+                <Step
+                  title="Completed"
+                  description={order.status === 'completed' ? "Order completed" : "Waiting to complete"}
+                />
+              </Steps>
 
-        <Divider orientation="left">订单时间线</Divider>
+              <Row gutter={16} style={{ marginTop: 24 }}>
+                <Col span={8}>
+                  <Statistic
+                    title="Order Number"
+                    value={order.order_search_id}
+                    prefix={<FileTextOutlined />}
+                  />
+                </Col>
+                <Col span={8}>
+                  <Statistic
+                    title="Status"
+                    value={order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    valueStyle={{
+                      color: order.status === 'completed' ? '#3f8600' :
+                        order.status === 'processing' ? '#1890ff' :
+                          order.status === 'cancelled' ? '#cf1322' : '#faad14'
+                    }}
+                  />
+                </Col>
+                <Col span={8}>
+                  <Statistic
+                    title="Total Amount"
+                    value={order.amount}
+                    precision={2}
+                    prefix={<DollarOutlined />}
+                    suffix="AUD"
+                  />
+                </Col>
+              </Row>
+            </Space>
+          </Card>
 
-        <Steps
-          direction="vertical"
-          current={orderDetails.timeline.length - 1}
-          items={orderDetails.timeline.map((item: any) => ({
-            title: item.status,
-            description: item.time,
-          }))}
-        />
-      </Card>
+          <Row gutter={16}>
+            <Col span={16}>
+              <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <Card title={<Space><FileTextOutlined /> Print Details</Space>}>
+                  <Descriptions column={2}>
+                    <Descriptions.Item label="File Name">
+                      {order.file_name}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Pages">
+                      {order.pages} pages
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Color Mode">
+                      {order.color_mode === 'color' ? 'Color' : 'Black & White'}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Sides">
+                      {order.sides === 'double' ? 'Double-sided' : 'Single-sided'}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Paper Size">
+                      {order.paper_size}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Copies">
+                      {order.copies}
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Card>
 
-      <Space
-        style={{ display: "flex", justifyContent: "center", marginTop: 24 }}
-      >
-        <Link href="/print">
-          <Button type="primary">再次打印</Button>
-        </Link>
-        <Button>下载收据</Button>
-        <Button>联系客服</Button>
-      </Space>
-    </div>
+                <Card title={<Space><MailOutlined /> Delivery Information</Space>}>
+                  <Descriptions column={2}>
+                    <Descriptions.Item label="Delivery Method">
+                      {order.delivery_method === 'pickup' ? 'Lobby Pickup' : 'Mailbox Delivery'}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Name">
+                      <Space><UserOutlined /> {order.name}</Space>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Phone">
+                      <Space><PhoneOutlined /> {order.phone}</Space>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Email">
+                      {order.email}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Building">
+                      <Space><EnvironmentOutlined /> {order.building} South Wharf Drive</Space>
+                    </Descriptions.Item>
+                    {order.delivery_method === 'mailbox' && (
+                      <Descriptions.Item label="Mailbox Number">
+                        {order.mailbox_number}
+                      </Descriptions.Item>
+                    )}
+                  </Descriptions>
+                </Card>
+              </Space>
+            </Col>
+
+            <Col span={8}>
+              <Card title={<Space><ShoppingCartOutlined /> Order Summary</Space>}>
+                <Timeline>
+                  <Timeline.Item>
+                    <Space>
+                      <BankOutlined />
+                      <Text>Order Created</Text>
+                    </Space>
+                    <div style={{ marginLeft: 24 }}>
+                      <Text type="secondary">{new Date(order.created_at).toLocaleString()}</Text>
+                    </div>
+                  </Timeline.Item>
+                  {order.status === 'processing' && (
+                    <Timeline.Item>
+                      <Space>
+                        <LoadingOutlined />
+                        <Text>Processing</Text>
+                      </Space>
+                      <div style={{ marginLeft: 24 }}>
+                        <Text type="secondary">Your order is being processed</Text>
+                      </div>
+                    </Timeline.Item>
+                  )}
+                  {order.status === 'completed' && (
+                    <Timeline.Item>
+                      <Space>
+                        <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                        <Text>Completed</Text>
+                      </Space>
+                      <div style={{ marginLeft: 24 }}>
+                        <Text type="secondary">{new Date(order.completed_at).toLocaleString()}</Text>
+                      </div>
+                    </Timeline.Item>
+                  )}
+                  {order.status === 'cancelled' && (
+                    <Timeline.Item>
+                      <Space>
+                        <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
+                        <Text>Cancelled</Text>
+                      </Space>
+                    </Timeline.Item>
+                  )}
+                </Timeline>
+              </Card>
+            </Col>
+          </Row>
+        </Space>
+      </div>
+    </>
   );
 };
 
