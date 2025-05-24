@@ -10,6 +10,7 @@ import {
   LogoutOutlined,
   ShoppingCartOutlined,
   DownOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -73,11 +74,11 @@ const Navbar = () => {
       key: "/orders",
       icon: <FileOutlined />,
     },
-    // {
-    //   label: "Help",
-    //   key: "/help",
-    //   icon: <QuestionCircleOutlined />,
-    // },
+    {
+      label: "About&Contact",
+      key: "/about",
+      icon: <InfoCircleOutlined />,
+    },
   ];
 
   return (
@@ -97,7 +98,7 @@ const Navbar = () => {
           style={{ display: "flex", alignItems: "center", gap: "8px" }}
         >
           <PrinterOutlined style={{ fontSize: "24px" }} />
-          <span style={{ fontSize: "18px", fontWeight: "bold" }}>PrintHub</span>
+          <span style={{ fontSize: "18px", fontWeight: "bold" }}>SharedPrinter</span>
 
         </Link>
       </div>

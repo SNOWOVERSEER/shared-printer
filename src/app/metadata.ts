@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "PrintHub - Community Printing Service",
+    title: "SharedPrinter - Community Printing Service",
     description: "Easy document printing service for our community",
     icons: {
         icon: [
