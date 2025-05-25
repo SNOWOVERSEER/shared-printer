@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     Typography,
     Card,
@@ -26,7 +26,7 @@ import {
     BuildOutlined
 } from "@ant-design/icons";
 import { FormInstance } from "antd/es/form";
-
+import useUserStore from "@/store/userStore";
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
 const { useToken } = theme;
@@ -45,8 +45,28 @@ const DeliveryInfoStep = ({
     isLoggedIn
 }: DeliveryInfoStepProps) => {
     const { token } = useToken();
+    const { userProfile, fetchUserProfile } = useUserStore();
     const [deliveryMethod, setDeliveryMethod] = useState('pickup');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (isLoggedIn) {
+            fetchUserProfile();
+        }
+    }, [isLoggedIn, fetchUserProfile]);
+
+    useEffect(() => {
+        if (userProfile) {
+            form.setFieldsValue({
+                name: userProfile.full_name,
+                phone: userProfile.phone,
+                email: userProfile.email,
+                building: userProfile.building,
+                mailboxNumber: userProfile.mailbox_number,
+                deliveryMethod: 'pickup'
+            });
+        }
+    }, [userProfile, form]);
 
     // Handle delivery method change
     const handleDeliveryMethodChange = (e: any) => {
@@ -69,12 +89,7 @@ const DeliveryInfoStep = ({
     const handleSubmit = () => {
         form.validateFields()
             .then(values => {
-                setIsSubmitting(true);
-                console.log('Delivery info:', values);
-
-                // Simulate API call
                 setTimeout(() => {
-                    setIsSubmitting(false);
                     onNext();
                 }, 1000);
             })
@@ -298,7 +313,7 @@ const DeliveryInfoStep = ({
                                 borderRadius: "8px",
                             }}
                         >
-                            Next: Payment
+                            Next: Continue to Confirm Task
                         </Button>
                     </Col>
                 </Row>

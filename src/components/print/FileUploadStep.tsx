@@ -3,6 +3,7 @@ import { InboxOutlined } from "@ant-design/icons";
 import type { UploadFile, UploadProps } from "antd/es/upload/interface";
 import { useState } from "react";
 import { PDFDocument } from 'pdf-lib'
+import useFileStore from "@/store/fileStore";
 const { Title, Paragraph } = Typography;
 const { Dragger } = Upload;
 const { useToken } = theme;
@@ -14,53 +15,56 @@ interface FileUploadStepProps {
     isUploaded: boolean;
     setIsUploaded: (isUploaded: boolean) => void;
     setFilePages: (filePages: number) => void;
+    setUploadedFileInfo: (fileInfo: any) => void;
 }
 
-const FileUploadStep = ({ fileList, onFileListChange, isUploaded, setIsUploaded, onNext, setFilePages }: FileUploadStepProps) => {
+const FileUploadStep = ({ fileList, onFileListChange, isUploaded, setIsUploaded, onNext, setFilePages, setUploadedFileInfo }: FileUploadStepProps) => {
     const { token } = useToken();
     const [messageApi, contextHolder] = message.useMessage();
+    const { uploadFile, isUploading, error } = useFileStore();
+    const [uploading, setUploading] = useState(false);
 
-    // Get PDF page count
-    const getPdfPageCount = async (file: File) => {
-        try {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdfDoc = await PDFDocument.load(arrayBuffer);
-            return pdfDoc.getPages().length;
-        } catch (error) {
-            throw new Error(`PDF file is not valid ${error}`);
-
-        }
-    };
 
     // Handle file upload
-    const handleUpload = (info: any) => {
-        const { status } = info.file;
-
-        if (status === 'done') {
-
-            if (info.file.type === 'application/pdf') {
-                try {
-                    getPdfPageCount(info.file.originFileObj as File).then(pages => {
-                        setFilePages(pages);
-                    });
-                    messageApi.success(`${info.file.name} file uploaded successfully`);
-                    setIsUploaded(true);
-                } catch (error) {
-                    messageApi.error(`PDF file is not valid ${error}`);
-                    setIsUploaded(false);
-                }
-            } else {
-                setFilePages(1); //TODO: add support for other file types
-            }
-        } else if (status === 'error') {
-            messageApi.error(`${info.file.name} file upload failed`);
-            setIsUploaded(false);
-        }
+    const handleUpload = async (info: any) => {
+        const { status, originFileObj } = info.file;
 
 
-        // Only keep the latest file (single file upload)
         const latestFile = info.fileList.slice(-1);
         onFileListChange(latestFile);
+
+        if (status === 'uploading') {
+            return;
+        }
+
+        if (status === 'done' || status === 'error') {
+
+            try {
+                setUploading(true);
+
+
+                const fileResponse = await uploadFile(originFileObj);
+
+                setUploadedFileInfo({
+                    fileId: fileResponse.fileId,
+                    filename: fileResponse.filename,
+                    originalName: fileResponse.originalName,
+                    contentType: fileResponse.contentType,
+                    pages: fileResponse.pages
+                });
+
+                setFilePages(fileResponse.pages);
+
+                messageApi.success(`${info.file.name} File uploaded successfully`);
+                setIsUploaded(true);
+
+            } catch (error: any) {
+                messageApi.error(`File upload failed: ${error.message}`);
+                setIsUploaded(false);
+            } finally {
+                setUploading(false);
+            }
+        }
     };
 
     // Upload component properties
@@ -68,7 +72,12 @@ const FileUploadStep = ({ fileList, onFileListChange, isUploaded, setIsUploaded,
         name: 'file',
         multiple: false,
         fileList: fileList,
-        action: '',
+
+        customRequest: ({ file, onSuccess }) => {
+            setTimeout(() => {
+                onSuccess && onSuccess("ok");
+            }, 0);
+        },
         onChange: handleUpload,
         onDrop(e) {
             console.log('Dropped files', e.dataTransfer.files);
@@ -92,7 +101,7 @@ const FileUploadStep = ({ fileList, onFileListChange, isUploaded, setIsUploaded,
                 </Title>
 
                 <Paragraph style={{ textAlign: "center", marginBottom: 30 }}>
-                    Supports PDF, Word, Excel, PowerPoint, and common image formats
+                    Currently, only PDF files are supported. Will support more file types in the future.
                 </Paragraph>
 
                 <Dragger {...uploadProps} style={{ marginBottom: 30 }}>
@@ -113,7 +122,7 @@ const FileUploadStep = ({ fileList, onFileListChange, isUploaded, setIsUploaded,
                             type="primary"
                             size="large"
                             onClick={onNext}
-                            disabled={!isUploaded} //TODO: change to !isUploaded
+                            disabled={!isUploaded || uploading}
                             style={{
                                 height: "50px",
                                 padding: "0 30px",
@@ -121,7 +130,7 @@ const FileUploadStep = ({ fileList, onFileListChange, isUploaded, setIsUploaded,
                                 borderRadius: "8px",
                             }}
                         >
-                            Next: Select Print Options
+                            {uploading ? "Uploading..." : "Next: Select Print Options"}
                         </Button>
                     </Col>
                 </Row>

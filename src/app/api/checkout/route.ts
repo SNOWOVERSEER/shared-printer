@@ -19,7 +19,8 @@ export async function POST(request: Request) {
                 paperSize,
                 colorMode,
                 copies,
-                sides
+                sides,
+                order_id
             }
         } = body;
 
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
             `${sides} sides`,
             `${colorMode}`,
             `${copies} copies`,
+            `Order ID: ${order_id}`
         ];
 
 
@@ -51,7 +53,7 @@ export async function POST(request: Request) {
                 },
             ],
             mode: 'payment',
-            success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+            success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}&order_id=${orderId}`,
             cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cancel`,
             customer_email: customerEmail,
             client_reference_id: orderId,
