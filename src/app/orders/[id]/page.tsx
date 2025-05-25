@@ -40,7 +40,6 @@ import useAuthStore from '@/store/authStore';
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
 
-
 const { Title, Text, Paragraph } = Typography;
 const { Step } = Steps;
 
@@ -51,6 +50,19 @@ const OrderDetailPage = () => {
   const { fetchOrderById, updateOrderStatus, isLoading, error } = useOrderStore();
   const [order, setOrder] = useState<any>(null);
   const { user } = useAuthStore();
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if screen is mobile size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   useEffect(() => {
     const loadOrder = async () => {
       try {
@@ -125,13 +137,20 @@ const OrderDetailPage = () => {
         </div>
 
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          {/* Order Information Card */}
           <Card>
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: isMobile ? 'flex-start' : 'center',
+                flexDirection: isMobile ? 'column' : 'row',
+                gap: isMobile ? 12 : 0
+              }}>
                 <Title level={4} style={{ margin: 0 }}>
                   Order Information
                 </Title>
-                <Space>
+                <Space wrap>
                   <Link href="/orders">
                     <Button>Back to Orders</Button>
                   </Link>
@@ -144,9 +163,12 @@ const OrderDetailPage = () => {
               </div>
               <Divider style={{ margin: '12px 0' }} />
 
+              {/* Steps */}
               <Steps
                 current={getStatusStep(order.status)}
                 status={order.status === 'cancelled' ? 'error' : 'process'}
+                direction={isMobile ? 'vertical' : 'horizontal'}
+                size={isMobile ? 'small' : 'default'}
               >
                 <Step
                   title="Order Placed"
@@ -162,15 +184,16 @@ const OrderDetailPage = () => {
                 />
               </Steps>
 
-              <Row gutter={16} style={{ marginTop: 24 }}>
-                <Col span={8}>
+              {/* Statistics */}
+              <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
+                <Col xs={24} sm={8}>
                   <Statistic
                     title="Order Number"
                     value={order.order_search_id}
                     prefix={<FileTextOutlined />}
                   />
                 </Col>
-                <Col span={8}>
+                <Col xs={24} sm={8}>
                   <Statistic
                     title="Status"
                     value={order.status.charAt(0).toUpperCase() + order.status.slice(1)}
@@ -181,7 +204,7 @@ const OrderDetailPage = () => {
                     }}
                   />
                 </Col>
-                <Col span={8}>
+                <Col xs={24} sm={8}>
                   <Statistic
                     title="Total Amount"
                     value={order.amount}
@@ -194,11 +217,16 @@ const OrderDetailPage = () => {
             </Space>
           </Card>
 
-          <Row gutter={16}>
-            <Col span={16}>
+          {/* Main content */}
+          <Row gutter={[16, 16]}>
+            <Col xs={24} lg={16}>
               <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                {/* Print Details Card */}
                 <Card title={<Space><FileTextOutlined /> Print Details</Space>}>
-                  <Descriptions column={2}>
+                  <Descriptions
+                    column={isMobile ? 1 : 2}
+                    size={isMobile ? 'small' : 'default'}
+                  >
                     <Descriptions.Item label="File Name">
                       {order.file_name}
                     </Descriptions.Item>
@@ -220,8 +248,12 @@ const OrderDetailPage = () => {
                   </Descriptions>
                 </Card>
 
+                {/* Delivery Information Card */}
                 <Card title={<Space><MailOutlined /> Delivery Information</Space>}>
-                  <Descriptions column={2}>
+                  <Descriptions
+                    column={isMobile ? 1 : 2}
+                    size={isMobile ? 'small' : 'default'}
+                  >
                     <Descriptions.Item label="Delivery Method">
                       {order.delivery_method === 'pickup' ? 'Lobby Pickup' : 'Mailbox Delivery'}
                     </Descriptions.Item>
@@ -247,7 +279,8 @@ const OrderDetailPage = () => {
               </Space>
             </Col>
 
-            <Col span={8}>
+            {/* Order Summary - responsive */}
+            <Col xs={24} lg={8}>
               <Card title={<Space><ShoppingCartOutlined /> Order Summary</Space>}>
                 <Timeline>
                   <Timeline.Item>
@@ -255,8 +288,10 @@ const OrderDetailPage = () => {
                       <BankOutlined />
                       <Text>Order Created</Text>
                     </Space>
-                    <div style={{ marginLeft: 24 }}>
-                      <Text type="secondary">{new Date(order.created_at).toLocaleString()}</Text>
+                    <div style={{ marginLeft: isMobile ? 16 : 24, marginTop: 4 }}>
+                      <Text type="secondary" style={{ fontSize: isMobile ? '12px' : '14px' }}>
+                        {new Date(order.created_at).toLocaleString()}
+                      </Text>
                     </div>
                   </Timeline.Item>
                   {order.status === 'processing' && (
@@ -265,8 +300,10 @@ const OrderDetailPage = () => {
                         <LoadingOutlined />
                         <Text>Processing</Text>
                       </Space>
-                      <div style={{ marginLeft: 24 }}>
-                        <Text type="secondary">Your order is being processed</Text>
+                      <div style={{ marginLeft: isMobile ? 16 : 24, marginTop: 4 }}>
+                        <Text type="secondary" style={{ fontSize: isMobile ? '12px' : '14px' }}>
+                          Your order is being processed
+                        </Text>
                       </div>
                     </Timeline.Item>
                   )}
@@ -276,8 +313,10 @@ const OrderDetailPage = () => {
                         <CheckCircleOutlined style={{ color: '#52c41a' }} />
                         <Text>Completed</Text>
                       </Space>
-                      <div style={{ marginLeft: 24 }}>
-                        <Text type="secondary">{new Date(order.completed_at).toLocaleString()}</Text>
+                      <div style={{ marginLeft: isMobile ? 16 : 24, marginTop: 4 }}>
+                        <Text type="secondary" style={{ fontSize: isMobile ? '12px' : '14px' }}>
+                          {new Date(order.completed_at).toLocaleString()}
+                        </Text>
                       </div>
                     </Timeline.Item>
                   )}
