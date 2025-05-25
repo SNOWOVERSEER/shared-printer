@@ -134,6 +134,7 @@ const HomePage = () => {
           borderRadius: 16,
           overflow: "hidden",
           border: "none",
+          background: `linear-gradient(135deg, ${token.colorPrimaryBg} 0%, #ffffff 100%)`,
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
         }}
         styles={{
