@@ -68,12 +68,13 @@ const orderService = {
     getMyOrders: (): Promise<Order[]> => {
         return get<Order[]>('/api/orders/my');
     },
-    getAllOrders: (page: number = 1, size: number = 10): Promise<OrderList> => {
-        return get<OrderList>(`/api/orders?page=${page}&size=${size}`);
+
+    getAllOrders: (page: number = 1, size: number = 10): Promise<Order[]> => {
+        return get<Order[]>(`/api/orders?page=${page}&size=${size}`);
     },
 
     updateOrderStatus: (id: string, status: string): Promise<Order> => {
-        return put<Order>(`/api/orders/${id}/status?status=${status}`, {});
+        return put<Order>(`/api/orders/${id}/status`, { status });
     },
 
     getOrderById: (id: string): Promise<Order> => {

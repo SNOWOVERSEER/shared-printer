@@ -28,7 +28,7 @@ const useOrderStore = create<OrderState>((set, get) => ({
     allOrders: [],
     currentOrder: null,
     totalOrders: 0,
-    currentPage: 1, // 后端从1开始计页
+    currentPage: 1,
     pageSize: 10,
     isLoading: false,
     error: null,
@@ -63,10 +63,10 @@ const useOrderStore = create<OrderState>((set, get) => ({
     fetchAllOrders: async (page = 1, size = 10) => {
         set({ isLoading: true, error: null });
         try {
-            const response = await API.order.getAllOrders(page, size);
+            const orders = await API.order.getAllOrders(page, size);
             set({
-                allOrders: response.items,
-                totalOrders: response.total,
+                allOrders: orders,
+                totalOrders: orders.length,
                 currentPage: page,
                 pageSize: size,
                 isLoading: false
