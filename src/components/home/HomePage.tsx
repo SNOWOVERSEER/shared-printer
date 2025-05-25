@@ -128,12 +128,11 @@ const HomePage = () => {
     >
       {/* Hero Section */}
       <Card
-        className="fade-in"
+        className={`${styles["hero-gradient-card"]} fade-in`}
         style={{
           marginBottom: 60,
           borderRadius: 16,
           overflow: "hidden",
-          background: `linear-gradient(135deg, ${token.colorPrimaryBg} 0%, #ffffff 100%)`,
           border: "none",
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
         }}
