@@ -44,6 +44,34 @@
   z-index: -1;
 }
 
+.hero-gradient-card {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-gradient-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(22, 119, 255, 0.1) 0%, transparent 70%);
+  animation: rotateOnly 20s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rotateOnly {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @keyframes rotate {
   0% {
     filter: hue-rotate(0deg);

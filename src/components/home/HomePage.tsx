@@ -19,7 +19,6 @@ import {
   RightCircleFilled,
   ThunderboltFilled,
   StarFilled,
-  ExperimentOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
@@ -128,12 +127,11 @@ const HomePage = () => {
     >
       {/* Hero Section */}
       <Card
-        className="fade-in"
+        className={`${styles["hero-gradient-card"]} fade-in`}
         style={{
           marginBottom: 60,
           borderRadius: 16,
           overflow: "hidden",
-          background: `linear-gradient(135deg, ${token.colorPrimaryBg} 0%, #ffffff 100%)`,
           border: "none",
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
         }}
@@ -185,55 +183,6 @@ const HomePage = () => {
 
           </Space>
         </div>
-      </Card>
-
-      {/* Beta Testing Notice */}
-      <Card
-        className="slide-up"
-        style={{
-          marginBottom: 60,
-          borderRadius: 16,
-          background: `linear-gradient(135deg, ${token.colorInfoBg} 0%, ${token.colorBgContainer} 100%)`,
-          border: `1px solid ${token.colorInfoBorder}`,
-          boxShadow: "0 4px 12px rgba(22, 119, 255, 0.1)",
-        }}
-        styles={{
-          body: {
-            padding: "24px 32px",
-          },
-        }}
-      >
-        <Row align="middle" gutter={[16, 16]}>
-          <Col flex="none">
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 48,
-                height: 48,
-                borderRadius: 12,
-                backgroundColor: token.colorInfo,
-                color: "#fff",
-              }}
-            >
-              <ExperimentOutlined style={{ fontSize: 24 }} />
-            </div>
-          </Col>
-          <Col flex="auto">
-            <div>
-              <Title level={4} style={{ margin: 0, marginBottom: 8, color: token.colorInfoText }}>
-                🧪 Beta Testing Phase
-              </Title>
-              <Paragraph style={{ margin: 0, color: token.colorTextSecondary, lineHeight: 1.6 }}>
-                We're currently in beta testing! Feel free to explore and test our service.
-                <strong> All Stripe payments are in sandbox mode - no real charges will occur.</strong>
-                If you need actual printing, please mention it in the notes section.
-                Questions? Feel free to reach out!
-              </Paragraph>
-            </div>
-          </Col>
-        </Row>
       </Card>
 
       {/* Features Section */}
