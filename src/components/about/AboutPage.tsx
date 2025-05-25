@@ -27,6 +27,7 @@ import {
     EnvironmentOutlined,
 } from "@ant-design/icons";
 import React from "react";
+import styles from "./AboutPage.module.css";
 
 const { Title, Paragraph, Text } = Typography;
 const { useToken } = theme;
@@ -122,6 +123,7 @@ const AboutPage = () => {
         >
             {/* Hero Section */}
             <Card
+                className={`${styles["gradient-card"]} fade-in`}
                 style={{
                     marginBottom: 60,
                     borderRadius: 20,
@@ -137,7 +139,7 @@ const AboutPage = () => {
                     },
                 }}
             >
-                <div style={{ marginBottom: 20 }}>
+                <div className={styles["floating-printer"]}>
                     <PrinterOutlined style={{ fontSize: 80, color: token.colorPrimary }} />
                 </div>
                 <Title
@@ -169,6 +171,7 @@ const AboutPage = () => {
                 {/* Story Section */}
                 <Col xs={24} lg={14}>
                     <Card
+                        className={`slide-up ${styles["story-card"]}`}
                         style={{
                             height: "100%",
                             borderRadius: 16,
@@ -244,6 +247,7 @@ const AboutPage = () => {
                     <Space direction="vertical" size="large" style={{ width: "100%" }}>
                         {/* Profile Card */}
                         <Card
+                            className={`slide-up ${styles["profile-card"]}`}
                             style={{
                                 borderRadius: 16,
                                 textAlign: "center",
@@ -349,6 +353,7 @@ const AboutPage = () => {
 
                         {/* Location Card */}
                         <Card
+                            className={`slide-up ${styles["location-card"]}`}
                             style={{
                                 borderRadius: 16,
                                 border: `1px solid ${token.colorBorderSecondary}`,
@@ -378,6 +383,7 @@ const AboutPage = () => {
 
             {/* Call to Action */}
             <Card
+                className={`slide-up ${styles["cta-card"]}`}
                 style={{
                     marginTop: 60,
                     borderRadius: 20,
