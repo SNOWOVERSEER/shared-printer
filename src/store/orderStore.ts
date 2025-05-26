@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import API from '@/api';
-import orderService, { Order, OrderRequest, OrderResponseForCreate, OrdersResponse } from '@/api/services/orderService';
+import orderService, { Order, OrderRequest, OrderResponseForCreate, OrderListResponse } from '@/api/services/orderService';
 
 interface OrderState {
     myOrders: Order[];
@@ -63,10 +63,10 @@ const useOrderStore = create<OrderState>((set, get) => ({
     fetchAllOrders: async (page = 1, size = 10) => {
         set({ isLoading: true, error: null });
         try {
-            const orders = await API.order.getAllOrders(page, size);
+            const response = await API.order.getAllOrders(page, size);
             set({
-                allOrders: orders,
-                totalOrders: orders.length,
+                allOrders: response.orders,
+                totalOrders: response.total,
                 currentPage: page,
                 pageSize: size,
                 isLoading: false

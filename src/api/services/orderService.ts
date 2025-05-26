@@ -53,6 +53,15 @@ export interface OrderResponseForCreate {
     created_at: string;
 }
 
+export interface OrderListResponse {
+    orders: Order[];
+    total: number;
+    page: number;
+    size: number;
+    total_pages: number;
+}
+
+
 export interface StripePaymentResponse {
     order_id: string;
     payment_status: string;
@@ -69,8 +78,8 @@ const orderService = {
         return get<Order[]>('/api/orders/my');
     },
 
-    getAllOrders: (page: number = 1, size: number = 10): Promise<Order[]> => {
-        return get<Order[]>(`/api/orders?page=${page}&size=${size}`);
+    getAllOrders: (page: number = 1, size: number = 10): Promise<OrderListResponse> => {
+        return get<OrderListResponse>(`/api/orders?page=${page}&size=${size}`);
     },
 
     updateOrderStatus: (id: string, status: string): Promise<Order> => {
