@@ -108,7 +108,7 @@ const ProfilePage = () => {
             {contextHolder}
             <div style={{ maxWidth: 1000, margin: "0 auto", padding: "40px 20px" }}>
                 <Row gutter={[24, 24]}>
-                    {/* 左侧用户信息卡片 */}
+                    {/* profile card left */}
                     <Col xs={24} md={8}>
                         <Card
                             style={{
@@ -189,7 +189,7 @@ const ProfilePage = () => {
                         </Card>
                     </Col>
 
-                    {/* 右侧内容区域 */}
+                    {/* profile card right */}
                     <Col xs={24} md={16}>
                         <Card
                             style={{

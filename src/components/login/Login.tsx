@@ -12,6 +12,7 @@ import {
   Divider,
   Space,
   message,
+  Modal,
 } from "antd";
 import {
   UserOutlined,
@@ -36,6 +37,45 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { login } = useAuthStore();
+  const [showForgotModal, setShowForgotModal] = useState(false);
+
+
+  const showForgotPasswordModal = () => {
+    setShowForgotModal(true);
+    // Modal.info({
+    //   title: 'Password Reset - Beta Version',
+    //   width: 500,
+    //   icon: <MailOutlined style={{ color: '#1890ff' }} />,
+    //   content: (
+    //     <div style={{ marginTop: 16 }}>
+    //       <Paragraph>
+    //         Our automated email system is still under development during the beta phase.
+    //       </Paragraph>
+    //       <Paragraph>
+    //         To reset your password, please send an email from your registered email address to:
+    //       </Paragraph>
+    //       <div style={{
+    //         background: '#f5f5f5',
+    //         padding: '12px 16px',
+    //         borderRadius: 6,
+    //         margin: '16px 0',
+    //         textAlign: 'center'
+    //       }}>
+    //         <Text strong style={{ fontSize: '16px' }}>
+    //           yuxuan.zeng.98@gmail.com
+    //         </Text>
+    //       </div>
+    //       <Paragraph>
+    //         Please include "Password Reset Request" in the subject line and mention your username in the email.
+    //       </Paragraph>
+    //       <Paragraph type="secondary">
+    //         We'll manually process your request and get back to you as soon as possible.
+    //       </Paragraph>
+    //     </div>
+    //   ),
+    //   okText: 'Got it',
+    // });
+  };
 
   const onFinishLogin = async (values: any) => {
     setLoading(true);
@@ -160,7 +200,14 @@ const AuthPage = () => {
                     <Form.Item name="remember" valuePropName="checked" noStyle>
                       <Checkbox>Remember me</Checkbox>
                     </Form.Item>
-                    <Link href="/forgot-password">Forgot password?</Link>
+                    <Button
+                      type="link"
+                      onClick={showForgotPasswordModal}
+                      style={{ padding: 0 }}
+                    >
+                      Forgot password?
+                    </Button>
+                    {/* <Link href="/forgot-password">Forgot password?</Link> */}
                   </div>
                 </Form.Item>
 
@@ -336,6 +383,43 @@ const AuthPage = () => {
           </Tabs>
         </Card>
       </div>
+
+      {/* Temporary forgot password modal */}
+      <Modal
+        title="Password Reset - Beta Version"
+        open={showForgotModal}
+        onOk={() => setShowForgotModal(false)}
+        onCancel={() => setShowForgotModal(false)}
+        okText="Got it"
+        cancelButtonProps={{ style: { display: 'none' } }}
+        width={500}
+      >
+        <div style={{ marginTop: 16 }}>
+          <Paragraph>
+            Our automated email system is still under development during the beta phase.
+          </Paragraph>
+          <Paragraph>
+            To reset your password, please send an email from your registered email address to:
+          </Paragraph>
+          <div style={{
+            background: '#f5f5f5',
+            padding: '12px 16px',
+            borderRadius: 6,
+            margin: '16px 0',
+            textAlign: 'center'
+          }}>
+            <Text strong style={{ fontSize: '16px' }}>
+              yuxuan.zeng.98@gmail.com
+            </Text>
+          </div>
+          <Paragraph>
+            Please include "Password Reset Request" in the subject line and mention your username in the email.
+          </Paragraph>
+          <Paragraph type="secondary">
+            We'll manually process your request and get back to you as soon as possible.
+          </Paragraph>
+        </div>
+      </Modal>
     </>
 
   );
