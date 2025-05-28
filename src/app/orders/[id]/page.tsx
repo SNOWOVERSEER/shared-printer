@@ -274,6 +274,11 @@ const OrderDetailPage = () => {
                         {order.mailbox_number}
                       </Descriptions.Item>
                     )}
+                    {order.notes && (
+                      <Descriptions.Item label="Notes" span={isMobile ? 1 : 2}>
+                        <Text>{order.notes}</Text>
+                      </Descriptions.Item>
+                    )}
                   </Descriptions>
                 </Card>
               </Space>
