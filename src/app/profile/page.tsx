@@ -8,6 +8,8 @@ import useAuthStore from "@/store/authStore";
 import useUserStore from "@/store/userStore";
 import { useRouter } from "next/navigation";
 import { UpdateUserRequest } from "@/api/services/userService";
+import { PasswordResetRequest } from "@/api/services/authService";
+import API from "@/api";
 
 
 const { Title, Paragraph } = Typography;
@@ -89,8 +91,12 @@ const ProfilePage = () => {
     //TODO: Reset password
     const handleChangePassword = async (values: any) => {
         try {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const resetData: PasswordResetRequest = {
+                current_password: values.oldPassword,
+                new_password: values.newPassword,
+            };
 
+            await API.auth.resetPassword(resetData);
             messageApi.success("Password reset successfully");
             setPasswordModalVisible(false);
             passwordForm.resetFields();
@@ -388,7 +394,7 @@ const ProfilePage = () => {
                 </Row>
             </div>
 
-            {/* 修改密码弹窗 */}
+            {/* reset password modal */}
             <Modal
                 title="Change Password"
                 open={passwordModalVisible}
